@@ -32,6 +32,7 @@ bool matrix_substract(struct Matrix *a, struct Matrix *b, struct Matrix *r);
 bool matrix_multiply(struct Matrix *a, struct Matrix *b, struct Matrix *r);
 void matrix_scalar_multiply(struct Matrix *m, float n);
 bool matrix_transpose(struct Matrix *m, struct Matrix *r);
+bool matrix_map(struct Matrix *m, struct Matrix *r, float (*f)(float));
 
 bool matrix_get(struct Matrix *m, int r, int c, float *v);
 bool matrix_set(struct Matrix *m, int r, int c, float v);

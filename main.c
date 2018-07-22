@@ -3,6 +3,9 @@
 
 #include "matrix.h"
 
+float plus3(float n) { return n * 100; }
+float (*f)(float) = &plus3;
+
 int main(int argc, char *argv[]) {
 
     struct Matrix m1;
@@ -30,6 +33,12 @@ int main(int argc, char *argv[]) {
     matrix_transpose(&m4, &m5);
 
     matrix_print(&m5);
+
+    struct Matrix m6;
+
+    matrix_map(&m5, &m6, f);
+
+    matrix_print(&m6);
 
     return 0;
 }

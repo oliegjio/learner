@@ -210,6 +210,22 @@ void matrix_fill_by_array(struct Matrix *m, float *arr) {
     }
 }
 
+bool matrix_map(struct Matrix *m, struct Matrix *r, float (*f)(float)) {
+    
+    if (!matrix(r, m->r, m->c)) return false;
+
+    float value;
+
+    for (int i = 0; i < m->r; i++) {
+        for (int j = 0; j < m->c; j++) {
+            matrix_get(m, i, j, &value);
+            matrix_set(r, i, j, (*f)(value));
+        }
+    }
+
+    return true;
+}
+
 void matrix_clear(struct Matrix *m) {
     free(m->m);
     m->m = NULL;
