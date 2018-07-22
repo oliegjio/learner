@@ -110,13 +110,19 @@ bool matrix_multiply(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
 
     if (!matrix_can_multiply(a, b)) return false;
 
-    float a_value, b_value;
+    float a_value, b_value, sum;
     
     matrix_init(r, a->r, b->c);
 
-    for (int i = 0; i < a->c; i++) {
-        for (int j = 0; j < b->r; j++) {
-            matrix_get(a, 
+    for (int i = 0; i < r->r; i++) {
+        for (int j = 0; j < r->c; j++) {
+            sum = 0.0f;
+            for (int k = 0; k < a->c; k++) {
+                matrix_get(a, k, i, &a_value);
+                matrix_get(b, j, k, &b_value);
+                sum += a_value * b_value;
+            }
+            matrix_set(r, j, i, sum);
         }
     }
 
