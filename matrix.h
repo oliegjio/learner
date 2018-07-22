@@ -30,6 +30,7 @@ bool matrix_select_row(struct Matrix *m, int n, float *r);
 bool matrix_add(struct Matrix *a, struct Matrix *b, struct Matrix *r);
 bool matrix_substract(struct Matrix *a, struct Matrix *b, struct Matrix *r);
 bool matrix_multiply(struct Matrix *a, struct Matrix *b, struct Matrix *r);
+void matrix_scalar_multiply(struct Matrix *m, float n);
 
 bool matrix_get(struct Matrix *m, int x, int y, float *r);
 bool matrix_set(struct Matrix *m, int x, int y, float v);

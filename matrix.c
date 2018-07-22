@@ -91,6 +91,18 @@ bool matrix_select_column(struct Matrix *m, int n, float *r) {
     return true;
 }
 
+void matrix_scalar_multiply(struct Matrix *m, float n) {
+
+    float value;    
+
+    for (int i = 0; i < m->c; i++) {
+        for (int j = 0; j < m->r; j++) {
+            matrix_get(m, i, j, &value);
+            matrix_set(m, i, j, value * n);
+        }
+    }
+}
+
 bool matrix_select_row(struct Matrix *m, int n, float *r) {
 
     if (n > m->r) return false;
