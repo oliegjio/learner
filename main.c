@@ -13,12 +13,23 @@ int main(int argc, char *argv[]) {
     matrix_from_array(&m1, 2, 3, arr1);
 
     float arr2[] = {5, 2, 4, 8, 9, 1};
-    matrix_from_array(&m2, 3, 2, arr2);
+    matrix_from_array(&m2, 2, 3, arr2);
 
-    matrix_multiply(&m1, &m2, &m3);
+    matrix_add(&m1, &m2, &m3);
     matrix_scalar_multiply(&m3, 2.0);
 
-    printf("%f", m3.m[0]);
+
+
+    struct Matrix m4;
+    struct Matrix m5;
+    float arr4[] = {1, 2, 3, 4, 5, 6};
+    matrix_from_array(&m4, 3, 2, arr4);
+
+    matrix_print(&m4);
+
+    matrix_transpose(&m4, &m5);
+
+    matrix_print(&m5);
 
     return 0;
 }

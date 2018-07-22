@@ -1,6 +1,6 @@
 #include "matrix.h"
 
-bool matrix(struct Matrix *m, int c, int r) {
+bool matrix(struct Matrix *m, int r, int c) {
 
     float *mem = (float*) malloc(r * c * sizeof(float));
 
@@ -23,8 +23,8 @@ bool matrix(struct Matrix *m, int c, int r) {
 }
 
 void matrix_fill_by_float(struct Matrix *m, int v) {
-    for (int i = 0; i < m->c; i++) {
-        for (int j = 0; j < m->r; j++) {
+    for (int i = 0; i < m->r; i++) {
+        for (int j = 0; j < m->c; j++) {
             matrix_set(m, i, j, v);
         }
     }
@@ -40,12 +40,12 @@ bool matrix_add(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     
     if (!matrix_is_dimensions_equal(a, b)) return false;
 
-    if (!matrix(r, a->c, a->r)) return false;
+    if (!matrix(r, a->r, a->c)) return false;
 
     float a_value, b_value;
 
-    for (int i = 0; i < a->c; i++) {
-        for (int j = 0; j < a->r; j++) {
+    for (int i = 0; i < a->r; i++) {
+        for (int j = 0; j < a->c; j++) {
 
             matrix_get(a, i, j, &a_value);
             matrix_get(b, i, j, &b_value);
@@ -61,17 +61,33 @@ bool matrix_substract(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     
     if (!matrix_is_dimensions_equal(a, b)) return false;
 
-    if (!matrix(r, a->c, a->r)) return false;
+    if (!matrix(r, a->r, a->c)) return false;
 
     float a_value, b_value;
 
-    for (int i = 0; i < a->c; i++) {
-        for (int j = 0; j < a->r; j++) {
+    for (int i = 0; i < a->r; i++) {
+        for (int j = 0; j < a->c; j++) {
 
             matrix_get(a, i, j, &a_value);
             matrix_get(b, i, j, &b_value);
 
             matrix_set(r, i, j, a_value - b_value);
+        }
+    }
+
+    return true;
+}
+
+bool matrix_transpose(struct Matrix *m, struct Matrix *r) {
+
+    if (!matrix(r, m->c, m->r)) return false;
+
+    float value;
+
+    for (int i = 0; i < m->r; i++) {
+        for (int j = 0; j < m->c; j++) {
+            matrix_get(m, i, j, &value);
+            matrix_set(r, j, i, value);
         }
     }
 
@@ -117,8 +133,8 @@ void matrix_scalar_multiply(struct Matrix *m, float n) {
 
     float value;    
 
-    for (int i = 0; i < m->c; i++) {
-        for (int j = 0; j < m->r; j++) {
+    for (int i = 0; i < m->r; i++) {
+        for (int j = 0; j < m->c; j++) {
             matrix_get(m, i, j, &value);
             matrix_set(m, i, j, value * n);
         }
@@ -137,48 +153,48 @@ bool matrix_multiply(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
         for (int j = 0; j < r->c; j++) {
             sum = 0.0f;
             for (int k = 0; k < a->c; k++) {
-                matrix_get(a, k, i, &a_value);
-                matrix_get(b, j, k, &b_value);
+                matrix_get(a, i, k, &a_value);
+                matrix_get(b, k, j, &b_value);
                 sum += a_value * b_value;
             }
-            matrix_set(r, j, i, sum);
+            matrix_set(r, i, j, sum);
         }
     }
 
     return true;
 }
 
-bool matrix_is_in_bounds(struct Matrix *m, int x, int y) {
-    if (x < 0 || x > m->c) return false;
-    if (y < 0 || y > m->r) return false;
+bool matrix_is_in_bounds(struct Matrix *m, int r, int c) {
+    if (r < 0 || r > m->r) return false;
+    if (c < 0 || c > m->c) return false;
     return true;
 }
 
-bool matrix_get(struct Matrix *m, int x, int y, float *r) {
+bool matrix_get(struct Matrix *m, int r, int c, float *v) {
 
-    if (!matrix_is_in_bounds(m, x, y)) return false;
+    if (!matrix_is_in_bounds(m, r, c)) return false;
 
-    *r = m->m[x + y * m->c];
-
-    return true;
-}
-
-bool matrix_set(struct Matrix *m, int x, int y, float v) {
-
-    if (!matrix_is_in_bounds(m, x, y)) return false;
-
-    m->m[x + y * m->c] = v;
+    *v = m->m[c + r * m->c];
 
     return true;
 }
 
-bool matrix_from_array(struct Matrix *m, int c, int r, float *arr) {
+bool matrix_set(struct Matrix *m, int r, int c, float v) {
 
-    if (!matrix(m, c, r)) return false;    
+    if (!matrix_is_in_bounds(m, r, c)) return false;
 
-    for (int i = 0; i < c; i++) {
-        for (int j = 0; j < r; j++) {
-            matrix_set(m, i, j, arr[i + j * c]);
+    m->m[c + r * m->c] = v;
+
+    return true;
+}
+
+bool matrix_from_array(struct Matrix *m, int r, int c, float *arr) {
+
+    if (!matrix(m, r, c)) return false;    
+
+    for (int i = 0; i < r; i++) {
+        for (int j = 0; j < c; j++) {
+            matrix_set(m, i, j, arr[j + i * c]);
         }
     }
 
@@ -187,9 +203,9 @@ bool matrix_from_array(struct Matrix *m, int c, int r, float *arr) {
 
 void matrix_fill_by_array(struct Matrix *m, float *arr) {
 
-    for (int i = 0; i < m->c; i++) {
-        for (int j = 0; j < m->r; j++) {
-            matrix_set(m, i, j, arr[i + j * m->c]);
+    for (int i = 0; i < m->r; i++) {
+        for (int j = 0; j < m->c; j++) {
+            matrix_set(m, i, j, arr[j + i * m->c]);
         }
     }
 }
@@ -199,4 +215,17 @@ void matrix_clear(struct Matrix *m) {
     m->m = NULL;
     m->c = 0;
     m->r = 0;
+}
+
+void matrix_print(struct Matrix *m) {
+    
+    float value;
+
+    for (int i = 0; i < m->r; i++) {
+        for (int j = 0; j < m->c; j++) {
+            matrix_get(m, i, j, &value);
+            printf("%f  ", value);
+        }
+        printf("\n");
+    }
 }
