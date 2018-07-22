@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     matrix_multiply(&m1, &m2, &m3);
     matrix_scalar_multiply(&m3, 2.0);
 
-    printf("%f", m3.m[5]);
+    printf("%f", m3.m[0]);
 
     return 0;
 }

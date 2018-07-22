@@ -1,10 +1,17 @@
 #include "matrix.h"
 
-bool matrix_init(struct Matrix *m, int c, int r) {
+bool matrix(struct Matrix *m, int c, int r) {
 
     float *mem = (float*) malloc(r * c * sizeof(float));
 
-    if (mem == NULL) return false;
+    if (mem == NULL) {
+
+        m->c = 0;
+        m->r = 0;
+        m->m = NULL;
+        
+        return false;
+    }
 
     m->c = c;
     m->r = r;
@@ -33,9 +40,9 @@ bool matrix_add(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     
     if (!matrix_is_dimensions_equal(a, b)) return false;
 
-    float a_value, b_value;
+    if (!matrix(r, a->c, a->r)) return false;
 
-    matrix_init(r, a->c, a->r);
+    float a_value, b_value;
 
     for (int i = 0; i < a->c; i++) {
         for (int j = 0; j < a->r; j++) {
@@ -54,9 +61,9 @@ bool matrix_substract(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     
     if (!matrix_is_dimensions_equal(a, b)) return false;
 
-    float a_value, b_value;
+    if (!matrix(r, a->c, a->r)) return false;
 
-    matrix_init(r, a->c, a->r);
+    float a_value, b_value;
 
     for (int i = 0; i < a->c; i++) {
         for (int j = 0; j < a->r; j++) {
@@ -76,7 +83,7 @@ bool matrix_can_multiply(struct Matrix *a, struct Matrix *b) {
     return true;
 }
 
-bool matrix_select_column(struct Matrix *m, int n, float *r) {
+bool matrix_select_column(struct Matrix *m, int n, float *v) {
     
     if (n > m->c) return false;
     if (n < 0) return false;
@@ -85,7 +92,22 @@ bool matrix_select_column(struct Matrix *m, int n, float *r) {
 
     for (int i = 0; i < m->r; i++) {
         matrix_get(m, n, i, &value);
-        r[i] = value;
+        v[i] = value;
+    }
+
+    return true;
+}
+
+bool matrix_select_row(struct Matrix *m, int n, float *v) {
+
+    if (n > m->r) return false;
+    if (n < 0) return false;
+
+    float value;
+
+    for (int i = 0; i < m->c; i++) {
+        matrix_get(m, i, n, &value);
+        v[i] = value;
     }
 
     return true;
@@ -103,28 +125,13 @@ void matrix_scalar_multiply(struct Matrix *m, float n) {
     }
 }
 
-bool matrix_select_row(struct Matrix *m, int n, float *r) {
-
-    if (n > m->r) return false;
-    if (n < 0) return false;
-
-    float value;
-
-    for (int i = 0; i < m->c; i++) {
-        matrix_get(m, i, n, &value);
-        r[i] = value;
-    }
-
-    return true;
-}
-
 bool matrix_multiply(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
 
     if (!matrix_can_multiply(a, b)) return false;
 
+    if (!matrix(r, a->r, b->c)) return false;
+
     float a_value, b_value, sum;
-    
-    matrix_init(r, a->r, b->c);
 
     for (int i = 0; i < r->r; i++) {
         for (int j = 0; j < r->c; j++) {
@@ -167,7 +174,7 @@ bool matrix_set(struct Matrix *m, int x, int y, float v) {
 
 bool matrix_from_array(struct Matrix *m, int c, int r, float *arr) {
 
-    if (!matrix_init(m, c, r)) return false;    
+    if (!matrix(m, c, r)) return false;    
 
     for (int i = 0; i < c; i++) {
         for (int j = 0; j < r; j++) {
@@ -189,6 +196,7 @@ void matrix_fill_by_array(struct Matrix *m, float *arr) {
 
 void matrix_clear(struct Matrix *m) {
     free(m->m);
+    m->m = NULL;
     m->c = 0;
     m->r = 0;
 }
