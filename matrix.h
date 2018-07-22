@@ -18,6 +18,8 @@ bool matrix_from_array(struct Matrix *m, int c, int r, float *arr);
 void matrix_fill_by_array(struct Matrix *m, float *arr);
 void matrix_clear(struct Matrix *m);
 
+void matrix_fill_by_float(struct Matrix *m, int v);
+
 bool matrix_is_dimensions_equal(struct Matrix *a, struct Matrix *b);
 bool matrix_is_in_bounds(struct Matrix *m, int x, int y);
 bool matrix_can_multiply(struct Matrix *a, struct Matrix *b);

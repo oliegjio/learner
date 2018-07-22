@@ -18,7 +18,6 @@ int main(int argc, char *argv[]) {
     float arr2[] = {4, 3, 2, 1};
     matrix_from_array(&m2, 2, 2, arr2);
 
-    matrix_init(&m3, COLS, ROWS);
     matrix_add(&m1, &m2, &m3);
 
     printf("%f", m3.m[1]);

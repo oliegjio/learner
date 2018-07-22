@@ -6,8 +6,8 @@ CC=gcc
 clean:
 	rm *.o
 
-build: main.o matrix.o
-	$(CC) main.o matrix.o -o $(PROG_NAME)
+build: vector.o matrix.o main.o
+	$(CC) vector.o matrix.o main.o -o $(PROG_NAME)
 
 run: build clean
 	./$(PROG_NAME)
@@ -22,3 +22,5 @@ main.o: main.c
 matrix.o: matrix.c
 	$(CC) -c matrix.c
 
+vector.o: vector.c
+	$(CC) -c vector.c

@@ -10,7 +10,17 @@ bool matrix_init(struct Matrix *m, int c, int r) {
     m->r = r;
     m->m = mem;
 
+    matrix_fill_by_float(m, 0);
+
     return true;
+}
+
+void matrix_fill_by_float(struct Matrix *m, int v) {
+    for (int i = 0; i < m->c; i++) {
+        for (int j = 0; j < m->r; j++) {
+            matrix_set(m, i, j, v);
+        }
+    }
 }
 
 bool matrix_is_dimensions_equal(struct Matrix *a, struct Matrix *b) {
@@ -24,6 +34,8 @@ bool matrix_add(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     if (!matrix_is_dimensions_equal(a, b)) return false;
 
     float a_value, b_value;
+
+    matrix_init(r, a->c, a->r);
 
     for (int i = 0; i < a->c; i++) {
         for (int j = 0; j < a->r; j++) {
@@ -43,6 +55,8 @@ bool matrix_substract(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     if (!matrix_is_dimensions_equal(a, b)) return false;
 
     float a_value, b_value;
+
+    matrix_init(r, a->c, a->r);
 
     for (int i = 0; i < a->c; i++) {
         for (int j = 0; j < a->r; j++) {
@@ -96,7 +110,15 @@ bool matrix_multiply(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
 
     if (!matrix_can_multiply(a, b)) return false;
 
+    float a_value, b_value;
     
+    matrix_init(r, a->r, b->c);
+
+    for (int i = 0; i < a->c; i++) {
+        for (int j = 0; j < b->r; j++) {
+            matrix_get(a, 
+        }
+    }
 
     return true;
 }
