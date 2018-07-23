@@ -193,6 +193,19 @@ bool matrix_map(struct Matrix *m, struct Matrix *r, float (*f)(float)) {
     return true;
 }
 
+bool matrix_equal(struct Matrix *a, struct Matrix *b) {
+    
+    if (!matrix_is_dimensions_equal(a, b)) return false;
+
+    for (int i = 0; i < a->r; i++) {
+        for (int j = 0; j < a->c; j++) {
+            if (a->m[j + i * a->c] != b->m[j + i * b->c]) return false;
+        }
+    }
+
+    return true;
+}
+
 void matrix_clear(struct Matrix *m) {
     free(m->m);
     m->m = NULL;

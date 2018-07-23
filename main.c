@@ -15,15 +15,16 @@ int main(int argc, char *argv[]) {
     struct Matrix m2;
     struct Matrix m3;
 
-    matrix(&m1, 500, 500);
-    matrix_randomize(&m1, 10, 15);
+    float arr1[] = {1, 2, 3, 4, 5, 6};
+    matrix_from_array(&m1, 2, 3, arr1);
 
-    matrix(&m2, 500, 500);
-    matrix_randomize(&m2, 10, 15);
+    float arr2[] = {1, 2, 3, 4, 5, 6};
+    matrix_from_array(&m2, 2, 3, arr2);
 
-    matrix_multiply(&m1, &m2, &m3);
+    bool result = matrix_equal(&m1, &m2);
 
-    matrix_print(&m3);
+    if (result) printf("TRUE");
+    else printf("FALSE");
     
 
     return 0;
