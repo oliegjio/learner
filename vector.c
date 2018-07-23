@@ -201,3 +201,17 @@ bool vector_cross_product(struct Vector *a, struct Vector *b, struct Vector *r) 
 
     return true;
 }
+
+bool vector_triple_product(struct Vector *a, struct Vector *b, struct Vector *c, float *r) {
+
+    if (a->l != 3 || b->l != 3 || c->l != 3) return false;
+
+    struct Vector cross_vector;
+
+    if (!vector_cross_product(b, c, &cross_vector)) return false;
+    if (!vector_dot_product(a, &cross_vector, r)) return false;
+
+    vector_clear(&cross_vector);
+
+    return true;
+}

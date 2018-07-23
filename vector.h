@@ -22,6 +22,7 @@ bool vector_subtract(struct Vector *a, struct Vector *b, struct Vector *r);
 bool vector_scalar_multiply(struct Vector *v, float n, struct Vector *r);
 bool vector_dot_product(struct Vector *a, struct Vector *b, float *r);
 bool vector_cross_product(struct Vector *a, struct Vector *b, struct Vector *r);
+bool vector_triple_product(struct Vector *a, struct Vector *b, struct Vector *c, float *r);
 bool vector_normalize(struct Vector *v, struct Vector *r);
 bool vector_angle(struct Vector *a, struct Vector *b, float *r);
 float vector_absolute(struct Vector *v);
