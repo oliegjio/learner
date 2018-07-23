@@ -1,8 +1,6 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#define CXR(m,x,y) (m[x]);
-
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,6 +35,7 @@ bool matrix_map(struct Matrix *m, struct Matrix *r, float (*f)(float));
 bool matrix_get(struct Matrix *m, int r, int c, float *v);
 bool matrix_set(struct Matrix *m, int r, int c, float v);
 
+void matrix_randomize(struct Matrix *m, float from, float to);
 void matrix_print(struct Matrix *m);
 
 #endif // MATRIX_H
