@@ -7,7 +7,7 @@ clean:
 	rm *.o
 
 build: vector.o matrix.o main.o
-	$(CC) vector.o matrix.o main.o -o $(PROG_NAME)
+	$(CC) vector.o matrix.o main.o -o $(PROG_NAME) -l m
 
 run: build clean
 	./$(PROG_NAME)

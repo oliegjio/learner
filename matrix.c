@@ -20,12 +20,15 @@ bool matrix(struct Matrix *m, int r, int c) {
     return true;
 }
 
-void matrix_fill_by_float(struct Matrix *m, int v) {
-    for (int i = 0; i < m->r; i++) {
-        for (int j = 0; j < m->c; j++) {
-            m->m[j + i * m->c] = v;
-        }
+bool matrix_to_array(struct Matrix *m, float *arr, int s) {
+
+    if (m->c * m->r != s) return false;
+
+    for (int i = 0; i < m->c * m->r; i++) {
+        arr[i] = m->m[i];
     }
+
+    return true;
 }
 
 bool matrix_is_dimensions_equal(struct Matrix *a, struct Matrix *b) {
@@ -82,31 +85,31 @@ bool matrix_can_multiply(struct Matrix *a, struct Matrix *b) {
     return true;
 }
 
-bool matrix_select_column(struct Matrix *m, int n, float *v) {
+bool matrix_select_column(struct Matrix *m, int n, float *v, int s) {
     
     if (n > m->c) return false;
     if (n < 0) return false;
 
-    for (int i = 0; i < m->r; i++) {
+    for (int i = 0; i < s; i++) {
         v[i] = m->m[n + i * m->c];
     }
 
     return true;
 }
 
-bool matrix_select_row(struct Matrix *m, int n, float *v) {
+bool matrix_select_row(struct Matrix *m, int n, float *v, int s) {
 
     if (n > m->r) return false;
     if (n < 0) return false;
 
-    for (int i = 0; i < m->c; i++) {
+    for (int i = 0; i < s; i++) {
         v[i] = m->m[i + n * m->c];
     }
 
     return true;
 }
 
-bool matrix_scalar_multiply(struct Matrix *m, struct Matrix *r, float n) {
+bool matrix_scalar_multiply(struct Matrix *m, float n, struct Matrix *r) {
 
     if (!matrix(r, m->r, m->c)) return false;
 
@@ -160,9 +163,10 @@ bool matrix_set(struct Matrix *m, int r, int c, float v) {
     return true;
 }
 
-bool matrix_from_array(struct Matrix *m, int r, int c, float *arr) {
+bool matrix_from_array(struct Matrix *m, int r, int c, float *arr, int s) {
 
-    if (!matrix(m, r, c)) return false;    
+    if (r * c != s) return false;
+    if (!matrix(m, r, c)) return false;
 
     for (int i = 0; i < r; i++) {
         for (int j = 0; j < c; j++) {
@@ -173,7 +177,7 @@ bool matrix_from_array(struct Matrix *m, int r, int c, float *arr) {
     return true;
 }
 
-bool matrix_map(struct Matrix *m, struct Matrix *r, float (*f)(float)) {
+bool matrix_map(struct Matrix *m, float (*f)(float), struct Matrix *r) {
     
     if (!matrix(r, m->r, m->c)) return false;
 
@@ -214,12 +218,6 @@ int matrix_rows(struct Matrix *m) {
     return m->r;
 }
 
-bool matrix_like(struct Matrix *a, struct Matrix *b) {
-
-    if (matrix(b, a->r, a->c)) return true;
-    else return false;
-}
-
 bool matrix_resize(struct Matrix *m, int r, int c) {
 
     matrix_clear(m);
@@ -235,14 +233,5 @@ void matrix_print(struct Matrix *m) {
             printf("%f  ", m->m[j + i * m->c]);
         }
         printf("\n");
-    }
-}
-
-void matrix_randomize(struct Matrix *m, float from, float to) {
-
-    for (int i = 0; i < m->r; i++) {
-        for (int j = 0; j < m->c; j++) {
-            m->m[j + i * m->c] = rand() * to + from;
-        }
     }
 }
