@@ -15,17 +15,7 @@ int main(int argc, char *argv[]) {
     struct Matrix m2;
     struct Matrix m3;
 
-    float arr1[] = {1, 2, 3, 4, 5, 6};
-    matrix_from_array(&m1, 2, 3, arr1);
-
-    float arr2[] = {1, 2, 3, 4, 5, 6};
-    matrix_from_array(&m2, 2, 3, arr2);
-
-    bool result = matrix_equal(&m1, &m2);
-
-    if (result) printf("TRUE");
-    else printf("FALSE");
-    
+    matrix(&m1, 3, 3);
 
     return 0;
 }

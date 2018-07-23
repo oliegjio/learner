@@ -2,7 +2,7 @@
 
 bool matrix(struct Matrix *m, int r, int c) {
 
-    float *mem = (float*) malloc(r * c * sizeof(float));
+    float *mem = (float*) calloc(r * c, sizeof(float));
 
     if (mem == NULL) {
 
@@ -16,8 +16,6 @@ bool matrix(struct Matrix *m, int r, int c) {
     m->c = c;
     m->r = r;
     m->m = mem;
-
-    matrix_fill_by_float(m, 0);
 
     return true;
 }
@@ -51,7 +49,7 @@ bool matrix_add(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     return true;
 }
 
-bool matrix_substract(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
+bool matrix_subtract(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     
     if (!matrix_is_dimensions_equal(a, b)) return false;
 
@@ -108,13 +106,17 @@ bool matrix_select_row(struct Matrix *m, int n, float *v) {
     return true;
 }
 
-void matrix_scalar_multiply(struct Matrix *m, float n) {
+bool matrix_scalar_multiply(struct Matrix *m, struct Matrix *r, float n) {
+
+    if (!matrix(r, m->r, m->c)) return false;
 
     for (int i = 0; i < m->r; i++) {
         for (int j = 0; j < m->c; j++) {
-            m->m[j + i * m->c] = m->m[j + i * m->c] * n;
+            r->m[j + i * m->c] = m->m[j + i * m->c] * n;
         }
     }
+
+    return true;
 }
 
 bool matrix_multiply(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
@@ -171,15 +173,6 @@ bool matrix_from_array(struct Matrix *m, int r, int c, float *arr) {
     return true;
 }
 
-void matrix_fill_by_array(struct Matrix *m, float *arr) {
-
-    for (int i = 0; i < m->r; i++) {
-        for (int j = 0; j < m->c; j++) {
-            m->m[j + i * m->c] = arr[j + i * m->c];
-        }
-    }
-}
-
 bool matrix_map(struct Matrix *m, struct Matrix *r, float (*f)(float)) {
     
     if (!matrix(r, m->r, m->c)) return false;
@@ -211,6 +204,28 @@ void matrix_clear(struct Matrix *m) {
     m->m = NULL;
     m->c = 0;
     m->r = 0;
+}
+
+int matrix_columns(struct Matrix *m) {
+    return m->c;
+}
+
+int matrix_rows(struct Matrix *m) {
+    return m->r;
+}
+
+bool matrix_like(struct Matrix *a, struct Matrix *b) {
+
+    if (matrix(b, a->r, a->c)) return true;
+    else return false;
+}
+
+bool matrix_resize(struct Matrix *m, int r, int c) {
+
+    matrix_clear(m);
+
+    if (matrix(m, r, c)) return true;
+    else return false;
 }
 
 void matrix_print(struct Matrix *m) {

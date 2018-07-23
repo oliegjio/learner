@@ -13,10 +13,13 @@ struct Matrix {
 
 bool matrix(struct Matrix *m, int r, int c);
 bool matrix_from_array(struct Matrix *m, int r, int c, float *arr);
-void matrix_fill_by_array(struct Matrix *m, float *arr);
 void matrix_clear(struct Matrix *m);
+void matrix_reset(struct Matrix *m);
+bool matrix_like(struct Matrix *a, struct Matrix *b);
+bool matrix_resize(struct Matrix *a, int r, int c);
 
 void matrix_fill_by_float(struct Matrix *m, int v);
+void matrix_randomize(struct Matrix *m, float from, float to);
 
 bool matrix_is_dimensions_equal(struct Matrix *a, struct Matrix *b);
 bool matrix_is_in_bounds(struct Matrix *m, int r, int c);
@@ -26,17 +29,18 @@ bool matrix_select_column(struct Matrix *m, int n, float *v);
 bool matrix_select_row(struct Matrix *m, int n, float *v);
 
 bool matrix_add(struct Matrix *a, struct Matrix *b, struct Matrix *r);
-bool matrix_substract(struct Matrix *a, struct Matrix *b, struct Matrix *r);
+bool matrix_subtract(struct Matrix *a, struct Matrix *b, struct Matrix *r);
 bool matrix_multiply(struct Matrix *a, struct Matrix *b, struct Matrix *r);
-void matrix_scalar_multiply(struct Matrix *m, float n);
+bool matrix_scalar_multiply(struct Matrix *m, struct Matrix *r, float n);
 bool matrix_transpose(struct Matrix *m, struct Matrix *r);
 bool matrix_map(struct Matrix *m, struct Matrix *r, float (*f)(float));
 bool matrix_equal(struct Matrix *a, struct Matrix *b);
 
 bool matrix_get(struct Matrix *m, int r, int c, float *v);
 bool matrix_set(struct Matrix *m, int r, int c, float v);
+int matrix_columns(struct Matrix *m);
+int matrix_rows(struct Matrix *m);
 
-void matrix_randomize(struct Matrix *m, float from, float to);
 void matrix_print(struct Matrix *m);
 
 #endif // MATRIX_H
