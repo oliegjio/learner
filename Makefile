@@ -6,8 +6,8 @@ CC=gcc
 clean:
 	rm *.o
 
-build: vector.o matrix.o main.o
-	$(CC) vector.o matrix.o main.o -o $(PROG_NAME) -l m
+build: vector.o matrix.o linear_algebra.o main.o
+	$(CC) vector.o matrix.o linear_algebra.o main.o -o $(PROG_NAME) -l m
 
 run: build clean
 	./$(PROG_NAME)
@@ -24,3 +24,6 @@ matrix.o: matrix.c
 
 vector.o: vector.c
 	$(CC) -c vector.c
+
+linear_algebra.o: linear_algebra.c
+	$(CC) -c linear_algebra.c
