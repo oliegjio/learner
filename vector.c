@@ -18,9 +18,8 @@ bool vector(struct Vector *v, int l) {
     return true;
 }
 
-bool vector_from_array(struct Vector *v, int l, float *arr, int s) {
+bool vector_from_array(struct Vector *v, float *arr, int l) {
     
-    if (l != s) return false;
     if (!vector(v, l)) return false;
 
     for (int i = 0; i < l; i++) {
@@ -84,9 +83,9 @@ bool vector_subtract(struct Vector *a, struct Vector *b, struct Vector *r) {
     return true;
 }
 
-bool vector_to_array(struct Vector *v, float *arr, int s) {
+bool vector_to_array(struct Vector *v, float *arr, int l) {
     
-    if (v->l != s) return false;
+    if (v->l != l) return false;
 
     for (int i = 0; i < v->l; i++) {
         arr[i] = v->v[i];

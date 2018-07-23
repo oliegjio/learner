@@ -12,8 +12,8 @@ struct Vector {
 };
 
 bool vector(struct Vector *v, int l);
-bool vector_from_array(struct Vector *v, int l, float *arr, int s);
-bool vector_to_array(struct Vector *v, float *arr, int s);
+bool vector_from_array(struct Vector *v, float *arr, int l);
+bool vector_to_array(struct Vector *v, float *arr, int l);
 void vector_clear(struct Vector *v);
 bool vector_resize(struct Vector *v, int l);
 

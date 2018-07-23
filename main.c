@@ -20,23 +20,17 @@ int main(int argc, char *argv[]) {
     struct Vector v3;
     struct Vector v4;
 
-    float arr1[3] = {9, 2, 3};
-    vector_from_array(&v1, 3, arr1, 3);
+    float arr1[] = {1, 2, 3};
+    vector_from_array(&v1, arr1, 3);
 
-    float arr2[3] = {4, 5, 2};
-    vector_from_array(&v2, 3, arr2, 3);
+    float arr2[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3};
+    matrix_from_array(&m1, 3, 4, arr2, 12);
 
-    float arr3[3] = {8, 7, 1};
-    vector_from_array(&v3, 3, arr3, 3);
+    matrix_print(&m1);
 
-    vector_print(&v1);
-    vector_print(&v2);
-    vector_print(&v3);
+    vector_matrix_multiply(&v1, &m1, &v4);
 
-    float result;
-    vector_triple_product(&v1, &v2, &v3, &result);
-
-    printf("%f", result);
+    vector_print(&v4);
 
     return 0;
 }
