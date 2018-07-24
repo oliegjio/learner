@@ -89,3 +89,31 @@ void perceptron_clear(struct Perceptron *p) {
     p->ls = 0;
     p->ws = 0;
 }
+
+void perceptron_print(struct Perceptron *p) {
+
+    for (int i = 0; i < p->ls; i++) {
+
+        if (i == 0) {
+
+            printf("Layer %d (INTPUT LAYER): has %d neurons ", i + 1, p->l[i].l);
+
+        } else if (i < p->ls - 1) {
+
+            printf("Layer %d (HIDDEN LAYER): has %d neurons ", i + 1, p->l[i].l);
+
+        } else {
+
+            printf("Layer %d (OUTPUT LAYER): has %d neurons ", i + 1, p->l[i].l);
+        }
+
+        if (i < p->ls - 1) {
+
+            printf("and %d connections to Layer %d \n", p->w[i].r * p->w[i].c, i + 2);
+
+        } else {
+
+            printf("\n");
+        }
+    }
+}

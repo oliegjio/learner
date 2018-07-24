@@ -13,7 +13,8 @@ struct Perceptron {
 };
 
 bool perceptron(struct Perceptron *p, int *c, int cs);
-
 void perceptron_clear(struct Perceptron *p);
+
+void perceptron_print(struct Perceptron *p);
 
 #endif // PERCEPTRON
