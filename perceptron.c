@@ -7,13 +7,7 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
     struct Vector *v_mem = (struct Vector *) calloc(cs, sizeof(struct Vector));
 
     if (v_mem == NULL) {
-
-        p->l = NULL;
-        p->w = NULL;
-        p->ls = 0;
-        p->ws = 0;
-
-        return false;
+        goto cleanup;
     }
 
     p->l = v_mem;
@@ -27,30 +21,14 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
             }
             free(p->l);
 
-            p->l = NULL;
-            p->w = NULL;
-            p->ls = 0;
-            p->ws = 0;
-
-            return false;
+            goto cleanup;
         }
     }
 
     struct Matrix *m_mem = (struct Matrix *) calloc(cs - 1, sizeof(struct Matrix));
 
     if (m_mem == NULL) {
-
-        for (int i = 0; i < cs; i++) {
-            free(&p->l[i]);
-        }
-        free(p->l);
-
-        p->l = NULL;
-        p->w = NULL;
-        p->ls = 0;
-        p->ws = 0;
-
-        return false;
+        goto cleanup_with_layers;
     }
 
     p->w = m_mem;
@@ -64,17 +42,7 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
             }
             free(p->w);
 
-            for (int j = 0; j < cs; j++) {
-                free(&p->l[j]);
-            }
-            free(p->l);
-
-            p->l = NULL;
-            p->w = NULL;
-            p->ls = 0;
-            p->ws = 0;
-
-            return false;
+            goto cleanup_with_layers;
         }
     }
 
@@ -82,6 +50,26 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
     p->ws = cs - 1;
 
     return true;
+
+    cleanup_with_layers: {
+
+        for (int j = 0; j < cs; j++) {
+          free(&p->l[j]);
+        }
+        free(p->l);
+
+        goto cleanup;
+    }
+
+    cleanup: {
+
+        p->l = NULL;
+        p->w = NULL;
+        p->ls = 0;
+        p->ws = 0;
+
+        return false;
+    }
 }
 
 void perceptron_clear(struct Perceptron *p) {
