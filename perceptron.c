@@ -87,15 +87,17 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
 void perceptron_clear(struct Perceptron *p) {
 
     for (int i = 0; i < p->ls; i++) {
-        free(&p->l[i]);
+        vector_clear(&p->l[i]);
     }
     free(p->l);
 
     for (int i = 0; i < p->ws; i++) {
-        free(&p->w[i]);
+        matrix_clear(&p->w[i]);
     }
     free(p->w);
 
+    p->l = NULL;
+    p->w = NULL;
     p->ls = 0;
     p->ws = 0;
 }
