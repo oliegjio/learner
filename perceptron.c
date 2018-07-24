@@ -92,7 +92,13 @@ void perceptron_clear(struct Perceptron *p) {
 
 void perceptron_print(struct Perceptron *p) {
 
+    int neurons = 0;
+    int connections = 0;
+
     for (int i = 0; i < p->ls; i++) {
+
+        neurons += p->l[i].l;
+        connections += p->w[i].c * p->w[i].r;
 
         if (i == 0) {
 
@@ -116,4 +122,6 @@ void perceptron_print(struct Perceptron *p) {
             printf("\n");
         }
     }
+
+    printf("SUMMARY: %d neurons, %d connections \n", neurons, connections);
 }
