@@ -172,20 +172,43 @@ bool perceptron_feedforward(struct Perceptron *p, float *i, int s) {
 
     if (s != p->l[0].l) return false;
 
+    struct Vector result;
+
     for (int i = 0; i < p->ws; i++) {
 
-//        p->l[i + 1] = 
+        if (!matrix_vector_multiply(&p->w[i], &p->l[i], &result)) printf("1! \n");
+        if (!vector_copy_values(&result, &p->l[i + 1])) printf("2! \n");
+
+        vector_clear(&result);
+
+        if (!vector_add(&p->l[i + 1], &p->b[i], &result)) printf("3! \n");
+        if (!vector_copy_values(&result, &p->l[i + 1])) printf("4! \n");
+
+        vector_clear(&result);
+
+        if (!vector_map(&p->l[i + 1], &perceptron_sigmoid, &result)) printf("5! \n");
+        if (!vector_copy_values(&result, &p->l[i + 1])) printf("6! \n");
+
+        vector_clear(&result);
     }
 
     return true;
 }
 
-void perceptron_random_weights(struct Perceptron *p, float min, float max) {
+void perceptron_randomize(struct Perceptron *p, float min, float max) {
 
     for (int i = 0; i < p->ws; i++) {
         for (int j = 0; j < p->w[i].r * p->w[i].c; j++) {
 
             p->w[i].m[j] = ((float) rand() / (float) RAND_MAX) * (max - min) + min;
+
+        }
+        for (int j = 0; j < p->b[i].l; j++) {
+            p->b[i].v[j] = ((float) rand() / (float) RAND_MAX) * (max - min) + min;
         }
     }
+}
+
+float perceptron_sigmoid(float x) {
+    return 1 / (1 + exp(-x));
 }

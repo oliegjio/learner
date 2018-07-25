@@ -225,3 +225,10 @@ bool vector_copy_values(struct Vector *from, struct Vector *to) {
 
     return true;
 }
+
+void vector_set_values(struct Vector *v, float f) {
+
+    for (int i = 0; i < v->l; i++) {
+        v->v[i] = f;
+    }
+}
