@@ -125,3 +125,18 @@ void perceptron_print(struct Perceptron *p) {
 
     printf("SUMMARY: %d neurons, %d connections \n", neurons, connections);
 }
+
+bool perceptron_feedforward(struct Perceptron *p, float *i, int s) {
+
+    return true;
+}
+
+void perceptron_random_weights(struct Perceptron *p, float min, float max) {
+
+    for (int i = 0; i < p->ws; i++) {
+        for (int j = 0; j < p->w[i].r * p->w[i].c; j++) {
+
+            p->w[i].m[j] = ((float) rand() / (float) RAND_MAX) * (max - min) + min;
+        }
+    }
+}
