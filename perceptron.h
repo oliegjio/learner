@@ -8,6 +8,9 @@ struct Perceptron {
     struct Vector *l;
     int ls;
 
+    struct Vector *b;
+    int bs;
+
     struct Matrix *w;
     int ws;
 };

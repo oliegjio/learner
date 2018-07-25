@@ -4,13 +4,13 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
 
     if (cs < 3) return false;
 
-    struct Vector *v_mem = (struct Vector *) calloc(cs, sizeof(struct Vector));
+    struct Vector *l_mem = (struct Vector *) calloc(cs, sizeof(struct Vector));
 
-    if (v_mem == NULL) {
-        goto cleanup;
+    if (l_mem == NULL) {
+        goto cleanup_from_layers;
     }
 
-    p->l = v_mem;
+    p->l = l_mem;
 
     for (int i = 0; i < cs; i++) {
 
@@ -21,17 +21,17 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
             }
             free(p->l);
 
-            goto cleanup;
+            goto cleanup_from_layers;
         }
     }
 
-    struct Matrix *m_mem = (struct Matrix *) calloc(cs - 1, sizeof(struct Matrix));
+    struct Matrix *w_mem = (struct Matrix *) calloc(cs - 1, sizeof(struct Matrix));
 
-    if (m_mem == NULL) {
-        goto cleanup_with_layers;
+    if (w_mem == NULL) {
+        goto cleanup_from_weights;
     }
 
-    p->w = m_mem;
+    p->w = w_mem;
 
     for (int i = 0; i < cs - 1; i++) {
 
@@ -42,26 +42,58 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
             }
             free(p->w);
 
-            goto cleanup_with_layers;
+            goto cleanup_from_weights;
+        }
+    }
+
+    struct Vector *b_mem = (struct Vector *) calloc(cs - 1, sizeof(struct Vector));
+
+    if (b_mem == NULL) {
+        goto cleanup_from_biases;
+    }
+
+    p->b = b_mem;
+
+    for (int i = 0; i < cs - 1; i++) {
+
+        if (!vector(&p->b[i], c[i + 1])) {
+
+            for (int j = 0; j < i; j++) {
+                free(&p->b[j]);
+            }
+            free(p->b);
+
+            goto cleanup_from_biases;
         }
     }
 
     p->ls = cs;
     p->ws = cs - 1;
+    p->bs = cs - 1;
 
     return true;
 
-    cleanup_with_layers: {
+    cleanup_from_biases: {
 
-        for (int j = 0; j < cs; j++) {
-          free(&p->l[j]);
+        for (int i = 0; i < cs -1; i++) {
+            free(&p->w[i]);
+        }
+        free(p->w);
+
+        goto cleanup_from_weights;
+    }
+
+    cleanup_from_weights: {
+
+        for (int i = 0; i < cs; i++) {
+          free(&p->l[i]);
         }
         free(p->l);
 
-        goto cleanup;
+        goto cleanup_from_layers;
     }
 
-    cleanup: {
+    cleanup_from_layers: {
 
         p->l = NULL;
         p->w = NULL;
@@ -84,21 +116,28 @@ void perceptron_clear(struct Perceptron *p) {
     }
     free(p->w);
 
+    for (int i = 0; i < p->bs; i++) {
+        vector_clear(&p->b[i]);
+    }
+    free(p->b);
+
     p->l = NULL;
     p->w = NULL;
+    p->b = NULL;
     p->ls = 0;
     p->ws = 0;
+    p->bs = 0;
 }
 
 void perceptron_print(struct Perceptron *p) {
 
     int neurons = 0;
     int connections = 0;
+    int biases = 0;
 
     for (int i = 0; i < p->ls; i++) {
 
         neurons += p->l[i].l;
-        connections += p->w[i].c * p->w[i].r;
 
         if (i == 0) {
 
@@ -106,14 +145,17 @@ void perceptron_print(struct Perceptron *p) {
 
         } else if (i < p->ls - 1) {
 
-            printf("Layer %d (HIDDEN LAYER): has %d neurons ", i + 1, p->l[i].l);
+            printf("Layer %d (HIDDEN LAYER): has %d neurons, %d biases ", i + 1, p->l[i].l, p->b[i - 1].l);
 
         } else {
 
-            printf("Layer %d (OUTPUT LAYER): has %d neurons ", i + 1, p->l[i].l);
+            printf("Layer %d (OUTPUT LAYER): has %d neurons, %d biases ", i + 1, p->l[i].l, p->b[i - 1].l);
         }
 
         if (i < p->ls - 1) {
+
+            connections += p->w[i].c * p->w[i].r;
+            biases += p->b[i].l;
 
             printf("and %d connections to Layer %d \n", p->w[i].r * p->w[i].c, i + 2);
 
@@ -123,7 +165,7 @@ void perceptron_print(struct Perceptron *p) {
         }
     }
 
-    printf("SUMMARY: %d neurons, %d connections \n", neurons, connections);
+    printf("SUMMARY: %d neurons, %d connections, %d biases \n", neurons, connections, biases);
 }
 
 bool perceptron_feedforward(struct Perceptron *p, float *i, int s) {
