@@ -14,6 +14,16 @@ int main(int argc, char *argv[]) {
 
     perceptron_randomize(&p, -1, 1);
 
+    #define INPUT_SIZE 3
+
+    float input[INPUT_SIZE] = {1, 2, 3};
+    float output[INPUT_SIZE];
+    perceptron_feedforward(&p, input, output, INPUT_SIZE);
+
+    struct Vector result;
+    vector_from_array(&result, output, INPUT_SIZE);
+    vector_print(&result);
+
     perceptron_print(&p);
 
     return 0;

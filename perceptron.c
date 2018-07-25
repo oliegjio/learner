@@ -168,7 +168,7 @@ void perceptron_print(struct Perceptron *p) {
     printf("SUMMARY: %d neurons, %d connections, %d biases \n", neurons, connections, biases);
 }
 
-bool perceptron_feedforward(struct Perceptron *p, float *i, int s) {
+bool perceptron_feedforward(struct Perceptron *p, float *i, float *o, int s) {
 
     if (s != p->l[0].l) return false;
 
@@ -191,6 +191,10 @@ bool perceptron_feedforward(struct Perceptron *p, float *i, int s) {
 
         vector_clear(&result);
     }
+
+    if (!vector_to_array(&p->l[p->ws], o, s)) printf("6! \n");
+//    if (!vector(o, p->l[p->ws].l)) 
+//    if (!vector_copy_values(&p->l[p->ws], o)) printf("7! \n");
 
     return true;
 }
