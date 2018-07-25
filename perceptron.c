@@ -170,6 +170,13 @@ void perceptron_print(struct Perceptron *p) {
 
 bool perceptron_feedforward(struct Perceptron *p, float *i, int s) {
 
+    if (s != p->l[0].l) return false;
+
+    for (int i = 0; i < p->ws; i++) {
+
+//        p->l[i + 1] = 
+    }
+
     return true;
 }
 

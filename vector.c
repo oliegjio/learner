@@ -214,3 +214,14 @@ bool vector_triple_product(struct Vector *a, struct Vector *b, struct Vector *c,
 
     return true;
 }
+
+bool vector_copy_values(struct Vector *from, struct Vector *to) {
+
+    if (from->l != to->l) return false;
+
+    for (int i = 0; i < to->l; i++) {
+        to->v[i] = from->v[i];
+    }
+
+    return true;
+}
