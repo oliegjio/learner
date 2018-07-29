@@ -1,6 +1,6 @@
 #include "matrix.h"
 
-bool matrix(struct Matrix *m, int r, int c) {
+bool matrix(Matrix *m, int r, int c) {
 
     float *mem = (float*) calloc(r * c, sizeof(float));
 
@@ -20,7 +20,19 @@ bool matrix(struct Matrix *m, int r, int c) {
     return true;
 }
 
-bool matrix_to_array(struct Matrix *m, float *arr, int s) {
+bool matrix_copy_values(Matrix *from, Matrix *to) {
+
+    if (from->c != to->c) return false;
+    if (from->r != to->r) return false;
+
+    for (int i = 0; i < to->c * to->r; i++) {
+        to->m[i] = from->m[i];
+    }
+
+    return true;
+}
+
+bool matrix_to_array(Matrix *m, float *arr, int s) {
 
     if (m->c * m->r != s) return false;
 
@@ -31,13 +43,13 @@ bool matrix_to_array(struct Matrix *m, float *arr, int s) {
     return true;
 }
 
-bool matrix_is_dimensions_equal(struct Matrix *a, struct Matrix *b) {
+bool matrix_is_dimensions_equal(Matrix *a, Matrix *b) {
     if (a->c != b->c) return false;
     if (a->r != b->r) return false;
     return true;
 }
 
-bool matrix_add(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
+bool matrix_add(Matrix *a, Matrix *b, Matrix *r) {
     
     if (!matrix_is_dimensions_equal(a, b)) return false;
 
@@ -52,7 +64,7 @@ bool matrix_add(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     return true;
 }
 
-bool matrix_subtract(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
+bool matrix_subtract(Matrix *a, Matrix *b, Matrix *r) {
     
     if (!matrix_is_dimensions_equal(a, b)) return false;
 
@@ -67,7 +79,7 @@ bool matrix_subtract(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     return true;
 }
 
-bool matrix_transpose(struct Matrix *m, struct Matrix *r) {
+bool matrix_transpose(Matrix *m, Matrix *r) {
 
     if (!matrix(r, m->c, m->r)) return false;
 
@@ -80,12 +92,12 @@ bool matrix_transpose(struct Matrix *m, struct Matrix *r) {
     return true;
 }
 
-bool matrix_can_multiply(struct Matrix *a, struct Matrix *b) {
+bool matrix_can_multiply(Matrix *a, Matrix *b) {
     if (a->c != b->r) return false;
     return true;
 }
 
-bool matrix_select_column(struct Matrix *m, int n, float *v, int s) {
+bool matrix_select_column(Matrix *m, int n, float *v, int s) {
     
     if (n > m->c) return false;
     if (n < 0) return false;
@@ -97,7 +109,7 @@ bool matrix_select_column(struct Matrix *m, int n, float *v, int s) {
     return true;
 }
 
-bool matrix_select_row(struct Matrix *m, int n, float *v, int s) {
+bool matrix_select_row(Matrix *m, int n, float *v, int s) {
 
     if (n > m->r) return false;
     if (n < 0) return false;
@@ -109,7 +121,7 @@ bool matrix_select_row(struct Matrix *m, int n, float *v, int s) {
     return true;
 }
 
-bool matrix_scalar_multiply(struct Matrix *m, float n, struct Matrix *r) {
+bool matrix_scalar_multiply(Matrix *m, float n, Matrix *r) {
 
     if (!matrix(r, m->r, m->c)) return false;
 
@@ -122,7 +134,7 @@ bool matrix_scalar_multiply(struct Matrix *m, float n, struct Matrix *r) {
     return true;
 }
 
-bool matrix_multiply(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
+bool matrix_multiply(Matrix *a, Matrix *b, Matrix *r) {
 
     if (!matrix_can_multiply(a, b)) return false;
 
@@ -139,13 +151,13 @@ bool matrix_multiply(struct Matrix *a, struct Matrix *b, struct Matrix *r) {
     return true;
 }
 
-bool matrix_is_in_bounds(struct Matrix *m, int r, int c) {
+bool matrix_is_in_bounds(Matrix *m, int r, int c) {
     if (r < 0 || r > m->r) return false;
     if (c < 0 || c > m->c) return false;
     return true;
 }
 
-bool matrix_get(struct Matrix *m, int r, int c, float *v) {
+bool matrix_get(Matrix *m, int r, int c, float *v) {
 
     if (!matrix_is_in_bounds(m, r, c)) return false;
 
@@ -154,7 +166,7 @@ bool matrix_get(struct Matrix *m, int r, int c, float *v) {
     return true;
 }
 
-bool matrix_set(struct Matrix *m, int r, int c, float v) {
+bool matrix_set(Matrix *m, int r, int c, float v) {
 
     if (!matrix_is_in_bounds(m, r, c)) return false;
 
@@ -163,7 +175,7 @@ bool matrix_set(struct Matrix *m, int r, int c, float v) {
     return true;
 }
 
-bool matrix_from_array(struct Matrix *m, int r, int c, float *arr, int s) {
+bool matrix_from_array(Matrix *m, int r, int c, float *arr, int s) {
 
     if (r * c != s) return false;
     if (!matrix(m, r, c)) return false;
@@ -177,7 +189,7 @@ bool matrix_from_array(struct Matrix *m, int r, int c, float *arr, int s) {
     return true;
 }
 
-bool matrix_map(struct Matrix *m, float (*f)(float), struct Matrix *r) {
+bool matrix_map(Matrix *m, float (*f)(float), Matrix *r) {
     
     if (!matrix(r, m->r, m->c)) return false;
 
@@ -190,7 +202,7 @@ bool matrix_map(struct Matrix *m, float (*f)(float), struct Matrix *r) {
     return true;
 }
 
-bool matrix_equal(struct Matrix *a, struct Matrix *b) {
+bool matrix_equal(Matrix *a, Matrix *b) {
     
     if (!matrix_is_dimensions_equal(a, b)) return false;
 
@@ -203,22 +215,22 @@ bool matrix_equal(struct Matrix *a, struct Matrix *b) {
     return true;
 }
 
-void matrix_clear(struct Matrix *m) {
+void matrix_clear(Matrix *m) {
     free(m->m);
     m->m = NULL;
     m->c = 0;
     m->r = 0;
 }
 
-int matrix_columns(struct Matrix *m) {
+int matrix_columns(Matrix *m) {
     return m->c;
 }
 
-int matrix_rows(struct Matrix *m) {
+int matrix_rows(Matrix *m) {
     return m->r;
 }
 
-bool matrix_resize(struct Matrix *m, int r, int c) {
+bool matrix_resize(Matrix *m, int r, int c) {
 
     matrix_clear(m);
 
@@ -226,7 +238,7 @@ bool matrix_resize(struct Matrix *m, int r, int c) {
     else return false;
 }
 
-void matrix_print(struct Matrix *m) {
+void matrix_print(Matrix *m) {
 
     for (int i = 0; i < m->r; i++) {
         for (int j = 0; j < m->c; j++) {

@@ -1,6 +1,6 @@
 #include "linear_algebra.h"
 
-bool matrix_to_vector(struct Matrix *m, struct Vector *v) {
+bool matrix_to_vector(Matrix *m, Vector *v) {
 
     if (m->c != 1 && m->r != 1) return false;
 
@@ -17,7 +17,7 @@ bool matrix_to_vector(struct Matrix *m, struct Vector *v) {
     return true;
 }
 
-bool vector_to_vertical_matrix(struct Vector *v, struct Matrix *m) {
+bool vector_to_vertical_matrix(Vector *v, Matrix *m) {
 
     if (!matrix(m, v->l, 1)) return false;
 
@@ -28,7 +28,7 @@ bool vector_to_vertical_matrix(struct Vector *v, struct Matrix *m) {
     return true;
 }
 
-bool vector_to_horizontal_matrix(struct Vector *v, struct Matrix *m) {
+bool vector_to_horizontal_matrix(Vector *v, Matrix *m) {
 
     if (!matrix(m, 1, v->l)) return false;
 
@@ -39,7 +39,7 @@ bool vector_to_horizontal_matrix(struct Vector *v, struct Matrix *m) {
     return true;
 }
 
-bool matrix_vector_multiply(struct Matrix *m, struct Vector *v, struct Vector *r) {
+bool matrix_vector_multiply(Matrix *m, Vector *v, Vector *r) {
 
     if (m->c != v->l) return false;
     if (!vector(r, m->r)) return false;
@@ -53,7 +53,7 @@ bool matrix_vector_multiply(struct Matrix *m, struct Vector *v, struct Vector *r
     return true;
 }
 
-bool vector_matrix_multiply(struct Vector *v, struct Matrix *m, struct Vector *r) {
+bool vector_matrix_multiply(Vector *v, Matrix *m, Vector *r) {
 
     if (m->r != v->l) return false;
     if (!vector(r, m->c)) return false;
@@ -63,6 +63,21 @@ bool vector_matrix_multiply(struct Vector *v, struct Matrix *m, struct Vector *r
             r->v[j] += m->m[j + i * m->c] * v->v[i];
         }
     }
+
+    return true;
+}
+
+bool vector_vector_multiply(Vector *a, Vector *b, Matrix *r) {
+
+    if (a->l != b->l) return false;
+
+    Matrix ma;
+    Matrix mb;
+
+    if (!vector_to_vertical_matrix(a, &ma)) return false;
+    if (!vector_to_horizontal_matrix(b, &mb)) return false;
+
+    if (!matrix_multiply(&ma, &mb, r)) return false;
 
     return true;
 }

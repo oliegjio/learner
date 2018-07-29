@@ -1,6 +1,6 @@
 #include "vector.h"
 
-bool vector(struct Vector *v, int l) {
+bool vector(Vector *v, int l) {
 
     float *mem = (float *) calloc(l, sizeof(float));
 
@@ -18,7 +18,7 @@ bool vector(struct Vector *v, int l) {
     return true;
 }
 
-bool vector_from_array(struct Vector *v, float *arr, int l) {
+bool vector_from_array(Vector *v, float *arr, int l) {
     
     if (!vector(v, l)) return false;
 
@@ -29,7 +29,7 @@ bool vector_from_array(struct Vector *v, float *arr, int l) {
     return true;
 }
 
-bool vector_set(struct Vector *v, int i, float n) {
+bool vector_set(Vector *v, int i, float n) {
 
     if (i > v->l || i < 0) return false;
 
@@ -38,7 +38,7 @@ bool vector_set(struct Vector *v, int i, float n) {
     return true;
 }
 
-bool vector_get(struct Vector *v, int i, float *n) {
+bool vector_get(Vector *v, int i, float *n) {
 
     if (i > v->l || i < 0) return false;
 
@@ -47,7 +47,7 @@ bool vector_get(struct Vector *v, int i, float *n) {
     return true;
 }
 
-void vector_print(struct Vector *v) {
+void vector_print(Vector *v) {
 
     for (int i = 0; i < v->l; i++) {
         printf("%f  ", v->v[i]);
@@ -55,11 +55,11 @@ void vector_print(struct Vector *v) {
     printf("\n");
 }
 
-int vector_length(struct Vector *v) {
+int vector_length(Vector *v) {
     return v->l;
 }
 
-bool vector_add(struct Vector *a, struct Vector *b, struct Vector *r) {
+bool vector_add(Vector *a, Vector *b, Vector *r) {
 
     if (a->l != b->l) return false;
     if (!vector(r, a->l)) return false;
@@ -71,7 +71,7 @@ bool vector_add(struct Vector *a, struct Vector *b, struct Vector *r) {
     return true;
 }
 
-bool vector_subtract(struct Vector *a, struct Vector *b, struct Vector *r) {
+bool vector_subtract(Vector *a, Vector *b, Vector *r) {
 
     if (a->l != b->l) return false;
     if (!vector(r, a->l)) return false;
@@ -83,7 +83,7 @@ bool vector_subtract(struct Vector *a, struct Vector *b, struct Vector *r) {
     return true;
 }
 
-bool vector_to_array(struct Vector *v, float *arr, int l) {
+bool vector_to_array(Vector *v, float *arr, int l) {
     
     if (v->l != l) return false;
 
@@ -94,7 +94,7 @@ bool vector_to_array(struct Vector *v, float *arr, int l) {
     return true;
 }
 
-bool vector_scalar_multiply(struct Vector *v, float n, struct Vector *r) {
+bool vector_scalar_multiply(Vector *v, float n, Vector *r) {
 
     if (!vector(r, v->l)) return false;
 
@@ -105,13 +105,13 @@ bool vector_scalar_multiply(struct Vector *v, float n, struct Vector *r) {
     return true;
 }
 
-void vector_clear(struct Vector *v) {
+void vector_clear(Vector *v) {
     free(v->v);
     v->v = NULL;
     v->l = 0;
 }
 
-bool vector_resize(struct Vector *v, int l) {
+bool vector_resize(Vector *v, int l) {
     
     vector_clear(v);
 
@@ -119,7 +119,7 @@ bool vector_resize(struct Vector *v, int l) {
     else return false;
 }
 
-bool vector_normalize(struct Vector *v, struct Vector *r) {
+bool vector_normalize(Vector *v, Vector *r) {
 
     if (!vector(r, v->l)) return false;
 
@@ -132,7 +132,7 @@ bool vector_normalize(struct Vector *v, struct Vector *r) {
     return true;
 }
 
-float vector_absolute(struct Vector *v) {
+float vector_absolute(Vector *v) {
     
     float abs = 0;
 
@@ -143,7 +143,7 @@ float vector_absolute(struct Vector *v) {
     return sqrt(abs);
 }
 
-bool vector_equal(struct Vector *a, struct Vector *b) {
+bool vector_equal(Vector *a, Vector *b) {
 
     if (a->l != b->l) return false;
 
@@ -154,7 +154,7 @@ bool vector_equal(struct Vector *a, struct Vector *b) {
     return true;
 }
 
-bool vector_map(struct Vector *v, float (*f)(float), struct Vector *r) {
+bool vector_map(Vector *v, float (*f)(float), Vector *r) {
 
     if (!vector(r, v->l)) return false;
 
@@ -165,7 +165,7 @@ bool vector_map(struct Vector *v, float (*f)(float), struct Vector *r) {
     return true;
 }
 
-bool vector_angle(struct Vector *a, struct Vector *b, float *r) {
+bool vector_angle(Vector *a, Vector *b, float *r) {
     
     float dot_product;
 
@@ -176,7 +176,7 @@ bool vector_angle(struct Vector *a, struct Vector *b, float *r) {
     return true;
 }
 
-bool vector_dot_product(struct Vector *a, struct Vector *b, float *r) {
+bool vector_dot_product(Vector *a, Vector *b, float *r) {
 
     if (a->l != b->l) return false;
 
@@ -189,7 +189,7 @@ bool vector_dot_product(struct Vector *a, struct Vector *b, float *r) {
     return true;
 }
 
-bool vector_cross_product(struct Vector *a, struct Vector *b, struct Vector *r) {
+bool vector_cross_product(Vector *a, Vector *b, Vector *r) {
     
     if (a->l != 3 || b->l != 3) return false;
     if (!vector(r, 3)) return false;
@@ -201,11 +201,11 @@ bool vector_cross_product(struct Vector *a, struct Vector *b, struct Vector *r) 
     return true;
 }
 
-bool vector_triple_product(struct Vector *a, struct Vector *b, struct Vector *c, float *r) {
+bool vector_triple_product(Vector *a, Vector *b, Vector *c, float *r) {
 
     if (a->l != 3 || b->l != 3 || c->l != 3) return false;
 
-    struct Vector cross_vector;
+    Vector cross_vector;
 
     if (!vector_cross_product(b, c, &cross_vector)) return false;
     if (!vector_dot_product(a, &cross_vector, r)) return false;
@@ -215,7 +215,7 @@ bool vector_triple_product(struct Vector *a, struct Vector *b, struct Vector *c,
     return true;
 }
 
-bool vector_copy_values(struct Vector *from, struct Vector *to) {
+bool vector_copy_vector_values(Vector *from, Vector *to) {
 
     if (from->l != to->l) return false;
 
@@ -226,7 +226,18 @@ bool vector_copy_values(struct Vector *from, struct Vector *to) {
     return true;
 }
 
-void vector_set_values(struct Vector *v, float f) {
+bool vector_copy_array_values(float *from, int s, Vector *to) {
+
+    if (s != to->l) return false;
+
+    for (int i = 0; i < s; i++) {
+        to->v[i] = from[i];
+    }
+    
+    return true;
+}
+
+void vector_set_values(Vector *v, float f) {
 
     for (int i = 0; i < v->l; i++) {
         v->v[i] = f;

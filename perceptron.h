@@ -3,26 +3,27 @@
 
 #include "linear_algebra.h"
 
-struct Perceptron {
+typedef struct Perceptron {
 
-    struct Vector *l;
+    Vector *l;
     int ls;
 
-    struct Vector *b;
+    Vector *b;
     int bs;
 
-    struct Matrix *w;
+    Matrix *w;
     int ws;
-};
+} Perceptron;
 
-bool perceptron(struct Perceptron *p, int *c, int cs);
+bool perceptron(Perceptron *p, int *c, int cs);
 void perceptron_clear(struct Perceptron *p);
 
-void perceptron_randomize(struct Perceptron *p, float from, float to);
-bool perceptron_feedforward(struct Perceptron *p, float *i, float *o, int s);
+void perceptron_randomize(Perceptron *p, float from, float to);
+bool perceptron_feedforward(Perceptron *p, float *i, int is, float *o, int os);
+bool perceptron_train(Perceptron *p, float *i, int is, float *t, int ts);
 
 float perceptron_sigmoid(float x);
 
-void perceptron_print(struct Perceptron *p);
+void perceptron_print(Perceptron *p);
 
 #endif // PERCEPTRON

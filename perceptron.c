@@ -1,10 +1,10 @@
 #include "perceptron.h"
 
-bool perceptron(struct Perceptron *p, int *c, int cs) {
+bool perceptron(Perceptron *p, int *c, int cs) {
 
     if (cs < 3) return false;
 
-    struct Vector *l_mem = (struct Vector *) calloc(cs, sizeof(struct Vector));
+    Vector *l_mem = (Vector *) calloc(cs, sizeof(Vector));
 
     if (l_mem == NULL) {
         goto cleanup_from_layers;
@@ -25,7 +25,7 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
         }
     }
 
-    struct Matrix *w_mem = (struct Matrix *) calloc(cs - 1, sizeof(struct Matrix));
+    Matrix *w_mem = (Matrix *) calloc(cs - 1, sizeof(Matrix));
 
     if (w_mem == NULL) {
         goto cleanup_from_weights;
@@ -46,7 +46,7 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
         }
     }
 
-    struct Vector *b_mem = (struct Vector *) calloc(cs - 1, sizeof(struct Vector));
+    Vector *b_mem = (Vector *) calloc(cs - 1, sizeof(Vector));
 
     if (b_mem == NULL) {
         goto cleanup_from_biases;
@@ -104,7 +104,7 @@ bool perceptron(struct Perceptron *p, int *c, int cs) {
     }
 }
 
-void perceptron_clear(struct Perceptron *p) {
+void perceptron_clear(Perceptron *p) {
 
     for (int i = 0; i < p->ls; i++) {
         vector_clear(&p->l[i]);
@@ -129,7 +129,7 @@ void perceptron_clear(struct Perceptron *p) {
     p->bs = 0;
 }
 
-void perceptron_print(struct Perceptron *p) {
+void perceptron_print(Perceptron *p) {
 
     int neurons = 0;
     int connections = 0;
@@ -168,38 +168,42 @@ void perceptron_print(struct Perceptron *p) {
     printf("SUMMARY: %d neurons, %d connections, %d biases \n", neurons, connections, biases);
 }
 
-bool perceptron_feedforward(struct Perceptron *p, float *i, float *o, int s) {
+bool perceptron_feedforward(Perceptron *p, float *i, int is, float *o, int os) {
 
-    if (s != p->l[0].l) return false;
+    if (is != p->l[0].l) return false;
+    if (os != p->l[p->ws].l) return false;
 
-    struct Vector result;
+    Vector buffer;
+
+    for (int i = 0; i < p->ls; i++) {
+        vector_set_values(&p->l[i], 0);
+    }
+    if (!vector_copy_array_values(i, is, &p->l[0])) return false;
 
     for (int i = 0; i < p->ws; i++) {
 
-        if (!matrix_vector_multiply(&p->w[i], &p->l[i], &result)) printf("1! \n");
-        if (!vector_copy_values(&result, &p->l[i + 1])) printf("2! \n");
+        if (!matrix_vector_multiply(&p->w[i], &p->l[i], &buffer)) return false;
+        if (!vector_copy_vector_values(&buffer, &p->l[i + 1])) return false;
 
-        vector_clear(&result);
+        vector_clear(&buffer);
 
-        if (!vector_add(&p->l[i + 1], &p->b[i], &result)) printf("3! \n");
-        if (!vector_copy_values(&result, &p->l[i + 1])) printf("4! \n");
+        if (!vector_add(&p->l[i + 1], &p->b[i], &buffer)) return false;
+        if (!vector_copy_vector_values(&buffer, &p->l[i + 1])) return false;
 
-        vector_clear(&result);
+        vector_clear(&buffer);
 
-        if (!vector_map(&p->l[i + 1], &perceptron_sigmoid, &result)) printf("5! \n");
-        if (!vector_copy_values(&result, &p->l[i + 1])) printf("6! \n");
+        if (!vector_map(&p->l[i + 1], &perceptron_sigmoid, &buffer)) return false;
+        if (!vector_copy_vector_values(&buffer, &p->l[i + 1])) return false;
 
-        vector_clear(&result);
+        vector_clear(&buffer);
     }
 
-    if (!vector_to_array(&p->l[p->ws], o, s)) printf("6! \n");
-//    if (!vector(o, p->l[p->ws].l)) 
-//    if (!vector_copy_values(&p->l[p->ws], o)) printf("7! \n");
+    if (!vector_to_array(&p->l[p->ws], o, os)) return false;
 
     return true;
 }
 
-void perceptron_randomize(struct Perceptron *p, float min, float max) {
+void perceptron_randomize(Perceptron *p, float min, float max) {
 
     for (int i = 0; i < p->ws; i++) {
         for (int j = 0; j < p->w[i].r * p->w[i].c; j++) {
@@ -215,4 +219,53 @@ void perceptron_randomize(struct Perceptron *p, float min, float max) {
 
 float perceptron_sigmoid(float x) {
     return 1 / (1 + exp(-x));
+}
+
+float perceptron_sigmoid_derivative(float x) {
+//    return perceptron_sigmoid(x) * (1 - perceptron_sigmoid(x));
+    return x * (1 - x);
+}
+
+bool perceptron_train(Perceptron *p, float *i, int is, float *t, int ts) {
+
+    float out[ts];
+    if (!perceptron_feedforward(p, i, is, out, ts)) return false;
+
+    Vector output_errors;
+    Vector targets;
+    Vector d_outputs;
+    Matrix m_outputs;
+    Matrix ml_outputs;
+    Matrix hidden_t;
+    Matrix ho_deltas;
+    Vector f_deltas;
+    Matrix f_weights;
+
+    const float learning_rate = 0.1f;
+
+    if (!vector_from_array(&targets, t, ts)) return false;
+
+
+    if (!vector_subtract(&targets, &p->l[p->ws], &output_errors)) printf("1! \n");
+    if (!vector_map(&p->l[p->ws], *perceptron_sigmoid_derivative, &d_outputs)) printf("2! \n");
+    if (!vector_vector_multiply(&d_outputs, &output_errors, &m_outputs)) printf("3! \n");
+    if (!matrix_scalar_multiply(&m_outputs, learning_rate, &ml_outputs)) printf("4! \n");
+
+    if (!matrix_vector_multiply(&ml_outputs, &p->l[p->ws], &f_deltas)) printf("5! \n");
+
+    if (!matrix_add(&p->w[p->ws - 1], &f_deltas, &f_weights)) printf("6! \n");
+    if (!matrix_copy_values(&f_weights, &p->w[p->ws - 1])) printf("7! \n");
+
+
+    for (int i = p->ws; i > 0; i--) {
+        
+        
+        
+    }
+
+    vector_clear(&targets);
+
+    printf("DONE! \n");
+
+    return true;
 }
