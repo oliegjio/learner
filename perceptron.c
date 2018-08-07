@@ -112,7 +112,7 @@ void perceptron_clear(Perceptron *p) {
     free(p->l);
 
     for (int i = 0; i < p->ws; i++) {
-        matrix_clear(&p->w[i]);
+        matrix_free(&p->w[i]);
     }
     free(p->w);
 
