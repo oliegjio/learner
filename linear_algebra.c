@@ -1,83 +1,37 @@
 #include "linear_algebra.h"
+#include "matrix_internal.h"
+#include "vector_internal.h"
 
-bool matrix_to_vector(struct Matrix *m, Vector *v) {
+#include <string.h>
 
-    if (m->c != 1 && m->r != 1) return false;
+Vector *matrix_to_vector(const Matrix *m) {
 
-    if (m->c == 1) {
-        if (!vector(v, m->r)) return false;
-        if (!matrix_select_column(m, 0, v->v)) return false;
-    }
+    if (m->c != 1 && m->r != 1) return NULL;
 
-    if (m->r == 1) {
-        if (!vector(v, m->c)) return false;
-        if (!matrix_select_row(m, 0, v->v)) return false;
-    }
+    Vector *v = vector_create(m->r * m->c);
+    if (v == NULL) return NULL;
 
-    return true;
+    memcpy(v->d, m->d, m->r * m->c * sizeof(float));
+
+    return v;
 }
 
-bool vector_to_vertical_matrix(Vector *v, struct Matrix *m) {
+Matrix *vector_to_vertical_matrix(const Vector *v) {
 
-    if (!matrix(m, v->l, 1)) return false;
+    Matrix *r = matrix_create(v->s, 1);
+    if (r == NULL) return NULL;
 
-    for (int i = 0; i < v->l; i++) {
-        m->m[i] = v->v[i];
-    }
+    memcpy(r->d, v->d, v->s * sizeof(float));
 
-    return true;
+    return r;
 }
 
-bool vector_to_horizontal_matrix(Vector *v, struct Matrix *m) {
+Matrix *vector_to_horizontal_matrix(const Vector *v) {
 
-    if (!matrix(m, 1, v->l)) return false;
+    Matrix *r = matrix_create(1, v->s);
+    if (r == NULL) return NULL;
 
-    for (int i = 0; i < v->l; i++) {
-        m->m[i] = v->v[i];
-    }
+    memcpy(r->d, v->d, v->s * sizeof(float));
 
-    return true;
-}
-
-bool matrix_vector_multiply(struct Matrix *m, Vector *v, Vector *r) {
-
-    if (m->c != v->l) return false;
-    if (!vector(r, m->r)) return false;
-
-    for (int i = 0; i < m->r; i++) {
-        for (int j = 0; j < m->c; j++) {
-            r->v[i] += m->m[j + i * m->c] * v->v[j];
-        }
-    }
-
-    return true;
-}
-
-bool vector_matrix_multiply(Vector *v, struct Matrix *m, Vector *r) {
-
-    if (m->r != v->l) return false;
-    if (!vector(r, m->c)) return false;
-
-    for (int i = 0; i < m->r; i++) {
-        for (int j = 0; j < m->c; j++) {
-            r->v[j] += m->m[j + i * m->c] * v->v[i];
-        }
-    }
-
-    return true;
-}
-
-bool vector_vector_multiply(Vector *a, Vector *b, struct Matrix *r) {
-
-    if (a->l != b->l) return false;
-
-    struct Matrix ma;
-    struct Matrix mb;
-
-    if (!vector_to_vertical_matrix(a, &ma)) return false;
-    if (!vector_to_horizontal_matrix(b, &mb)) return false;
-
-    if (!matrix_multiply(&ma, &mb, r)) return false;
-
-    return true;
+    return r;
 }

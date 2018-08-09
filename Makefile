@@ -1,4 +1,4 @@
-PROG_NAME=learner
+PROG_NAME=machine-learning
 CC=gcc
 
 ######################
@@ -8,6 +8,8 @@ clean:
 
 build: vector.o matrix.o linear_algebra.o perceptron.o main.o
 	$(CC) vector.o matrix.o linear_algebra.o perceptron.o main.o -o $(PROG_NAME) -l m
+# build: vector.o matrix.o linear_algebra.o main.o
+	# $(CC) vector.o matrix.o linear_algebra.o main.o -o $(PROG_NAME) -l m
 
 run: build clean
 	./$(PROG_NAME)

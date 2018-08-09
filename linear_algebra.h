@@ -1,15 +1,11 @@
-#ifndef LINEAR_ALGEBRA
-#define LINEAR_ALGEBRA
+#ifndef LINEAR_ALGEBRA_H_
+#define LINEAR_ALGEBRA_H_
 
 #include "matrix.h"
 #include "vector.h"
 
-bool matrix_to_vector(struct Matrix *m, Vector *v);
-bool vector_to_vertical_matrix(Vector *v, struct Matrix *m);
-bool vector_to_horizontal_matrix(Vector *v, struct Matrix *m);
+Vector *matrix_to_vector(const Matrix *m);
+Matrix *vector_to_vertical_matrix(const Vector *v);
+Matrix *vector_to_horizontal_matrix(const Vector *v);
 
-bool matrix_vector_multiply(struct Matrix *m, Vector *v, Vector *r);
-bool vector_matrix_multiply(Vector *v, struct Matrix *m, Vector *r);
-bool vector_vector_multiply(Vector *a, Vector *b, struct Matrix *r);
-
-#endif // LINEAR_ALGEBRA
+#endif // LINEAR_ALGEBRA_H_

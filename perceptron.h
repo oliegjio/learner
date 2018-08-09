@@ -1,29 +1,19 @@
-#ifndef PERCEPTRON
-#define PERCEPTRON
+#ifndef PERCEPTRON_H_
+#define PERCEPTRON_H_
 
-#include "linear_algebra.h"
+#include "matrix.h"
 
-typedef struct Perceptron {
+typedef struct Perceptron Perceptron;
 
-    Vector *l;
-    int ls;
-
-    Vector *b;
-    int bs;
-
-    Matrix *w;
-    int ws;
-} Perceptron;
-
-bool perceptron(Perceptron *p, int *c, int cs);
-void perceptron_clear(struct Perceptron *p);
+Perceptron *perceptron_create(int *c, size_t cs);
+void perceptron_destroy(Perceptron *p);
 
 void perceptron_randomize(Perceptron *p, float from, float to);
-bool perceptron_feedforward(Perceptron *p, float *i, int is, float *o, int os);
-bool perceptron_train(Perceptron *p, float *i, int is, float *t, int ts);
+int perceptron_feedforward(Perceptron *p, float *i, int is, float *o, int os);
+int perceptron_train(Perceptron *p, float *i, int is, float *t, int ts);
 
 float perceptron_sigmoid(float x);
 
-void perceptron_print(Perceptron *p);
+void perceptron_print(const Perceptron *p);
 
-#endif // PERCEPTRON
+#endif // PERCEPTRON_H_

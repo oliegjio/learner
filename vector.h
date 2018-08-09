@@ -1,42 +1,41 @@
-#ifndef VECTOR
-#define VECTOR
+#ifndef VECTOR_H_
+#define VECTOR_H_
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <math.h>
 
-typedef struct Vector {
-    float *v;
-    int l;
-} Vector;
+typedef struct Vector Vector;
 
-bool vector(Vector *v, int l);
-bool vector_from_array(Vector *v, float *arr, int l);
-bool vector_to_array(Vector *v, float *arr, int l);
-void vector_clear(Vector *v);
-bool vector_resize(Vector *v, int l);
+Vector *vector_create(size_t s);
+void vector_destroy(Vector *v);
 
-bool vector_copy_vector_values(Vector *from, Vector *to);
-bool vector_copy_array_values(float *from, int s, Vector *to);
-void vector_set_values(Vector *v, float f);
+Vector *vector_from_array(const float *arr, size_t s);
+float *vector_to_array(const Vector *v);
 
-bool vector_add(Vector *a, Vector *b, Vector *r);
-bool vector_subtract(Vector *a, Vector *b, Vector *r);
-bool vector_scalar_multiply(Vector *v, float n, Vector *r);
-bool vector_dot_product(Vector *a, Vector *b, float *r);
-bool vector_cross_product(Vector *a, Vector *b, Vector *r);
-bool vector_triple_product(Vector *a, Vector *b, Vector *c, float *r);
-bool vector_normalize(Vector *v, Vector *r);
-bool vector_angle(Vector *a, Vector *b, float *r);
-float vector_absolute(Vector *v);
-bool vector_equal(Vector *a, Vector *b);
-bool vector_map(Vector *m, float (*f)(float), Vector *r);
+Vector *vector_copy(const Vector *v);
+int vector_copy_values(const Vector *from, Vector *to);
 
-bool vector_get(Vector *v, int i, float *n);
-bool vector_set(Vector *v, int i, float n);
-int vector_length(Vector *v);
+Vector *vector_add(const Vector *a, const Vector *b);
+Vector *vector_subtract(const Vector *a, const Vector *b);
+Vector *vector_scalar_multiply(const Vector *v, float n);
+Vector *vector_scalar_add(const Vector *v, float n);
+Vector *vector_scalar_subtract(const Vector *v, float n);
+int vector_dot_product(const Vector *a, const Vector *b, float *r);
+Vector *vector_cross_product(const Vector *a, const Vector *b);
+int vector_triple_product(const Vector *a, const Vector *b, const Vector *c, float *r);
+Vector *vector_normalize(const Vector *v);
+int vector_angle_rad(const Vector *a, const Vector *b, float *r);
+int vector_angle_deg(const Vector *a, const Vector *b, float *r);
+float vector_modulus(const Vector *v);
+int vector_equal(const Vector *a, const Vector *b);
+Vector *vector_map(const Vector *v, float (*f)(float));
 
-void vector_print(Vector *v);
+int vector_push_back(Vector *v, float n);
+int vector_pop_back(Vector *v);
 
-#endif
+int vector_get_value(const Vector *v, size_t i, float *n);
+int vector_set_value(Vector *v, size_t i, float n);
+size_t vector_size(const Vector *v);
+
+void vector_print(const Vector *v);
+
+#endif // VECTOR_H_

@@ -1,245 +1,301 @@
 #include "vector.h"
 
-bool vector(Vector *v, int l) {
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
 
-    float *mem = (float *) calloc(l, sizeof(float));
+typedef struct Vector {
+    size_t s;
+    float *d;
+} Vector;
 
-    if (mem == NULL) {
+Vector *vector_create(size_t s) {
 
-        v->v = NULL;
-        v->l = 0;
+    Vector *v = (Vector*) malloc(sizeof(Vector));
+    if (v == NULL) return NULL;
 
-        return false;
+    float *d = (float*) calloc(s, sizeof(float));
+    if (d == NULL) {
+        free(v);
+        return NULL;
     }
 
-    v->v = mem;
-    v->l = l;
+    v->d = d;
+    v->s = s;
 
-    return true;
+    return v;
 }
 
-bool vector_from_array(Vector *v, float *arr, int l) {
-    
-    if (!vector(v, l)) return false;
-
-    for (int i = 0; i < l; i++) {
-        v->v[i] = arr[i];
-    }
-
-    return true;
+void vector_destroy(Vector *v) {
+    free(v->d);
+    free(v);
 }
 
-bool vector_set(Vector *v, int i, float n) {
+Vector *vector_from_array(const float *arr, size_t s) {
 
-    if (i > v->l || i < 0) return false;
+    Vector *r = vector_create(s);
+    if (r == NULL) return NULL;
 
-    v->v[i] = n;
+    memcpy(r->d, arr, s * sizeof(float));
 
-    return true;
+    return r;
 }
 
-bool vector_get(Vector *v, int i, float *n) {
+int vector_set_value(Vector *v, size_t i, float n) {
 
-    if (i > v->l || i < 0) return false;
+    if (i > v->s || i < 0) return 0;
 
-    *n = v->v[i];
+    v->d[i] = n;
 
-    return true;
+    return 1;
 }
 
-void vector_print(Vector *v) {
+int vector_get_value(const Vector *v, size_t i, float *n) {
 
-    for (int i = 0; i < v->l; i++) {
-        printf("%f  ", v->v[i]);
+    if (i > v->s || i < 0) return 0;
+
+    *n = v->d[i];
+
+    return 1;
+}
+
+void vector_print(const Vector *v) {
+
+    for (int i = 0; i < v->s; i++) {
+        printf("%f  ", v->d[i]);
     }
     printf("\n");
 }
 
-int vector_length(Vector *v) {
-    return v->l;
+size_t vector_size(const Vector *v) {
+    return v->s;
 }
 
-bool vector_add(Vector *a, Vector *b, Vector *r) {
+Vector *vector_add(const Vector *a, const Vector *b) {
 
-    if (a->l != b->l) return false;
-    if (!vector(r, a->l)) return false;
+    if (a->s != b->s) return NULL;
 
-    for (int i = 0; i < a->l; i++) {
-        r->v[i] = a->v[i] + b->v[i];
+    Vector *r = vector_create(a->s);
+    if (r == NULL) return NULL;
+
+    for (int i = 0; i < a->s; i++) {
+        r->d[i] = a->d[i] + b->d[i];
     }
 
-    return true;
+    return r;
 }
 
-bool vector_subtract(Vector *a, Vector *b, Vector *r) {
+Vector *vector_subtract(const Vector *a, const Vector *b) {
 
-    if (a->l != b->l) return false;
-    if (!vector(r, a->l)) return false;
+    if (a->s != b->s) return NULL;
 
-    for (int i = 0; i < a->l; i++) {
-        r->v[i] = a->v[i] - b->v[i];
+    Vector *r = vector_create(a->s);
+    if (r == NULL) return NULL;
+
+    for (int i = 0; i < a->s; i++) {
+        r->d[i] = a->d[i] - b->d[i];
     }
 
-    return true;
+    return r;
 }
 
-bool vector_to_array(Vector *v, float *arr, int l) {
-    
-    if (v->l != l) return false;
+float *vector_to_array(const Vector *v) {
 
-    for (int i = 0; i < v->l; i++) {
-        arr[i] = v->v[i];
+    float *arr = (float*) calloc(v->s, sizeof(float));
+    if (arr == NULL) return NULL;
+
+    memcpy(arr, v->d, v->s * sizeof(float));
+
+    return arr;
+}
+
+Vector *vector_scalar_multiply(const Vector *v, float n) {
+
+    Vector *r = vector_create(v->s);
+    if (r == NULL) return NULL;
+
+    for (int i = 0; i < r->s; i++) {
+        r->d[i] = v->d[i] * n;
     }
 
-    return true;
+    return r;
 }
 
-bool vector_scalar_multiply(Vector *v, float n, Vector *r) {
+Vector *vector_scalar_add(const Vector *v, float n) {
 
-    if (!vector(r, v->l)) return false;
+    Vector *r = vector_create(v->s);
+    if (r == NULL) return NULL;
 
-    for (int i = 0; i < r->l; i++) {
-        r->v[i] = v->v[i] * n;
+    for (int i = 0; i < r->s; i++) {
+        r->d[i] = v->d[i] + n;
     }
 
-    return true;
+    return r;
 }
 
-void vector_clear(Vector *v) {
-    free(v->v);
-    v->v = NULL;
-    v->l = 0;
-}
+Vector *vector_scalar_subtract(const Vector *v, float n) {
 
-bool vector_resize(Vector *v, int l) {
-    
-    vector_clear(v);
+    Vector *r = vector_create(v->s);
+    if (r == NULL) return NULL;
 
-    if (vector(v, l)) return true;
-    else return false;
-}
-
-bool vector_normalize(Vector *v, Vector *r) {
-
-    if (!vector(r, v->l)) return false;
-
-    float abs = vector_absolute(v);
-
-    for (int i = 0; i < r->l; i++) {
-        r->v[i] = v->v[i] / abs;
+    for (int i = 0; i < r->s; i++) {
+        r->d[i] = v->d[i] - n;
     }
 
-    return true;
+    return r;
 }
 
-float vector_absolute(Vector *v) {
-    
+Vector *vector_normalize(const Vector *v) {
+
+    Vector *r = vector_create(v->s);
+    if (r == NULL) return NULL;
+
+    float abs = vector_modulus(v);
+
+    for (int i = 0; i < r->s; i++) {
+        r->d[i] = v->d[i] / abs;
+    }
+
+    return r;
+}
+
+float vector_modulus(const Vector *v) {
+
     float abs = 0;
 
-    for (int i = 0; i < v->l; i++) {
-        abs += powf(v->v[i], 2.0f);
+    for (int i = 0; i < v->s; i++) {
+        abs += powf(v->d[i], 2.0f);
     }
 
     return sqrt(abs);
 }
 
-bool vector_equal(Vector *a, Vector *b) {
+int vector_equal(const Vector *a, const Vector *b) {
 
-    if (a->l != b->l) return false;
+    if (a->s != b->s) return 0;
 
-    for (int i = 0; i < a->l; i++) {
-        if (a->v[i] != b->v[i]) return false;
+    for (int i = 0; i < a->s; i++) {
+        if (a->d[i] != b->d[i]) return 0;
     }
 
-    return true;
+    return 1;
 }
 
-bool vector_map(Vector *v, float (*f)(float), Vector *r) {
+Vector *vector_map(const Vector *v, float (*f)(float)) {
 
-    if (!vector(r, v->l)) return false;
+    Vector *r = vector_create(v->s);
+    if (r == NULL) return NULL;
 
-    for (int i = 0; i < r->l; i++) {
-        r->v[i] = (*f)(v->v[i]);
+    for (int i = 0; i < r->s; i++) {
+        r->d[i] = (*f)(v->d[i]);
     }
 
-    return true;
+    return r;
 }
 
-bool vector_angle(Vector *a, Vector *b, float *r) {
-    
+int vector_angle_rad(const Vector *a, const Vector *b, float *r) {
+
     float dot_product;
 
-    if (!vector_dot_product(a, b, &dot_product)) return false;
+    if (vector_dot_product(a, b, &dot_product) == 0) return 0;
 
-    *r = acos(dot_product / (vector_absolute(a) * vector_absolute(b)));    
+    *r = acos(dot_product / (vector_modulus(a) * vector_modulus(b)));
 
-    return true;
+    return 1;
 }
 
-bool vector_dot_product(Vector *a, Vector *b, float *r) {
+int vector_angle_deg(const Vector *a, const Vector *b, float *r) {
 
-    if (a->l != b->l) return false;
+    float rad;
+    if (vector_angle_rad(a, b, &rad) == 0) return 0;
+
+    *r = rad * 180 / M_PI;
+
+    return 1;
+}
+
+int vector_dot_product(const Vector *a, const Vector *b, float *r) {
+
+    if (a->s != b->s) return 0;
 
     *r = 0;
 
-    for (int i = 0; i < a->l; i++) {
-        *r += a->v[i] * b->v[i];
+    for (int i = 0; i < a->s; i++) {
+        *r += a->d[i] * b->d[i];
     }
 
-    return true;
+    return 1;
 }
 
-bool vector_cross_product(Vector *a, Vector *b, Vector *r) {
-    
-    if (a->l != 3 || b->l != 3) return false;
-    if (!vector(r, 3)) return false;
-    
-    r->v[0] = a->v[1] * b->v[2] - a->v[2] * b->v[1];
-    r->v[1] = -(a->v[0] * b->v[2] - a->v[2] * b->v[0]);
-    r->v[2] = a->v[0] * b->v[1] - a->v[1] * b->v[0];
+Vector *vector_cross_product(const Vector *a, const Vector *b) {
 
-    return true;
+    if (a->s != 3 || b->s != 3) return NULL;
+
+    Vector *r = vector_create(a->s);
+    if (r == NULL) return NULL;
+
+    r->d[0] = a->d[1] * b->d[2] - a->d[2] * b->d[1];
+    r->d[1] = -(a->d[0] * b->d[2] - a->d[2] * b->d[0]);
+    r->d[2] = a->d[0] * b->d[1] - a->d[1] * b->d[0];
+
+    return r;
 }
 
-bool vector_triple_product(Vector *a, Vector *b, Vector *c, float *r) {
+int vector_triple_product(const Vector *a, const Vector *b, const Vector *c, float *r) {
 
-    if (a->l != 3 || b->l != 3 || c->l != 3) return false;
+    if (a->s != 3 || b->s != 3 || c->s != 3) return 0;
 
-    Vector cross_vector;
+    Vector *cross = vector_cross_product(b, c);
+    if (cross == NULL) return 0;
 
-    if (!vector_cross_product(b, c, &cross_vector)) return false;
-    if (!vector_dot_product(a, &cross_vector, r)) return false;
+    if (vector_dot_product(a, cross, r) == 0) return 0;
 
-    vector_clear(&cross_vector);
+    vector_destroy(cross);
 
-    return true;
+    return 1;
 }
 
-bool vector_copy_vector_values(Vector *from, Vector *to) {
+Vector *vector_copy(const Vector *v) {
 
-    if (from->l != to->l) return false;
+    Vector *r = (Vector*) malloc(sizeof(Vector));
+    if (r == NULL) return NULL;
 
-    for (int i = 0; i < to->l; i++) {
-        to->v[i] = from->v[i];
-    }
+    r->s = v->s;
+    memcpy(r->d, v->d, v->s * sizeof(float));
 
-    return true;
+    return r;
 }
 
-bool vector_copy_array_values(float *from, int s, Vector *to) {
+int vector_copy_values(const Vector *from, Vector *to) {
 
-    if (s != to->l) return false;
+    if (from->s != to->s) return 0;
 
-    for (int i = 0; i < s; i++) {
-        to->v[i] = from[i];
-    }
-    
-    return true;
+    memcpy(to->d, from->d, to->s * sizeof(float));
+
+    return 1;
 }
 
-void vector_set_values(Vector *v, float f) {
+int vector_push_back(Vector *v, float n) {
 
-    for (int i = 0; i < v->l; i++) {
-        v->v[i] = f;
-    }
+    float *d = (float*) realloc(v->d, v->s + 1);
+    if (d == NULL) return 0;
+
+    d[v->s] = n;
+    v->d = d;
+    v->s = v->s + 1;
+
+    return 1;
+}
+
+int vector_pop_back(Vector *v) {
+
+    if (v->s == 0) return 0;
+
+    float *d = (float*) realloc(v->d, v->s - 1);
+    if (d == NULL) return 0;
+
+    v->d = d;
+    v->s = v->s - 1;
+
+    return 1;
 }
