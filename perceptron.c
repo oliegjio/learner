@@ -2,6 +2,8 @@
 #include "matrix_internal.h"
 
 #include <stdio.h>
+#include <math.h>
+#include <string.h>
 
 typedef struct Perceptron {
 
@@ -18,41 +20,33 @@ typedef struct Perceptron {
 
 typedef enum AllocateMode {
     LAYERS_MODE = 0,
+    BIASES_MODE,
     WEIGHTS_MODE
 } AllocateMode;
 
-Matrix **perceptron_allocate(int *c, size_t cs, AllocateMode mode);
+Matrix **perceptron_allocate_matrices(const int *c, size_t cs, AllocateMode mode);
 void perceptron_destroy_matrices(Matrix **ms, size_t s);
 
-Perceptron *perceptron_create(int *c, size_t cs) {
+float perceptron_sigmoid(float x);
+float perceptron_sigmoid_d(float x);
+
+Perceptron *perceptron_create(const int *c, size_t cs) {
 
     if (cs < 3) return NULL;
 
     Perceptron *p = (Perceptron*) malloc(sizeof(Perceptron));
     if (p == NULL) return NULL;
 
-    Matrix **l = perceptron_allocate(c, cs, LAYERS_MODE);
-    if (l == NULL) {
-        free(p);
-        return NULL;
-    }
+    Matrix **l = perceptron_allocate_matrices(c, cs, LAYERS_MODE);
+    if (l == NULL) goto cleanup_from_layers;
     p->l = l;
 
-    Matrix **b = perceptron_allocate(c, cs - 1, LAYERS_MODE);
-    if (b == NULL) {
-        perceptron_destroy_matrices(p->l, cs);
-        free(p);
-        return NULL;
-    }
+    Matrix **b = perceptron_allocate_matrices(c, cs - 1, BIASES_MODE);
+    if (b == NULL) goto cleanup_from_biases;
     p->b = b;
 
-    Matrix **w = perceptron_allocate(c, cs - 1, WEIGHTS_MODE);
-    if (w == NULL) {
-        perceptron_destroy_matrices(p->l, cs);
-        perceptron_destroy_matrices(p->b, cs - 1);
-        free(p);
-        return NULL;
-    }
+    Matrix **w = perceptron_allocate_matrices(c, cs - 1, WEIGHTS_MODE);
+    if (w == NULL) goto cleanup_from_weights;
     p->w = w;
 
     p->ls = cs;
@@ -60,6 +54,19 @@ Perceptron *perceptron_create(int *c, size_t cs) {
     p->ws = cs - 1;
 
     return p;
+
+    cleanup_from_weights: {
+        perceptron_destroy_matrices(p->b, cs - 1);
+        goto cleanup_from_biases;
+    }
+    cleanup_from_biases: {
+        perceptron_destroy_matrices(p->l, cs);
+        goto cleanup_from_layers;
+    }
+    cleanup_from_layers: {
+        free(p);
+        return NULL;
+    }
 }
 
 void perceptron_destroy_matrices(Matrix **ms, size_t s) {
@@ -70,20 +77,20 @@ void perceptron_destroy_matrices(Matrix **ms, size_t s) {
     free(ms);
 }
 
-Matrix **perceptron_allocate(int *c, size_t cs, AllocateMode mode) {
+Matrix **perceptron_allocate_matrices(const int *c, size_t cs, AllocateMode mode) {
 
     Matrix **r = (Matrix**) malloc(cs * sizeof(Matrix*));
     if (r == NULL) return NULL;
 
+    Matrix *l;
+
     for (int i = 0; i < cs; i++) {
 
-        Matrix *l;
-
-        if (mode == LAYERS_MODE) {
-            l = matrix_create(c[i], 1);
-        }
-        if (mode == WEIGHTS_MODE) {
-            l = matrix_create(c[i + 1], c[i]);
+        switch (mode) {
+            case LAYERS_MODE: l = matrix_create(c[i], 1); break;
+            case BIASES_MODE: l = matrix_create(c[i + 1], 1); break;
+            case WEIGHTS_MODE: l = matrix_create(c[i + 1], c[i]); break;
+            default: return NULL;
         }
 
         if (l == NULL) {
@@ -100,31 +107,15 @@ Matrix **perceptron_allocate(int *c, size_t cs, AllocateMode mode) {
     return r;
 }
 
-//
-// void perceptron_clear(Perceptron *p) {
-//
-//     for (int i = 0; i < p->ls; i++) {
-//         vector_clear(&p->l[i]);
-//     }
-//     free(p->l);
-//
-//     for (int i = 0; i < p->ws; i++) {
-//         matrix_free(&p->w[i]);
-//     }
-//     free(p->w);
-//
-//     for (int i = 0; i < p->bs; i++) {
-//         vector_clear(&p->b[i]);
-//     }
-//     free(p->b);
-//
-//     p->l = NULL;
-//     p->w = NULL;
-//     p->b = NULL;
-//     p->ls = 0;
-//     p->ws = 0;
-//     p->bs = 0;
-// }
+
+void perceptron_destroy(Perceptron *p) {
+
+    perceptron_destroy_matrices(p->l, p->ls);
+    perceptron_destroy_matrices(p->b, p->bs);
+    perceptron_destroy_matrices(p->w, p->ws);
+
+    free(p);
+}
 
 void perceptron_print(const Perceptron *p) {
 
@@ -165,64 +156,63 @@ void perceptron_print(const Perceptron *p) {
     printf("SUMMARY: %d neurons, %d connections, %d biases \n", neurons, connections, biases);
 }
 
-// bool perceptron_feedforward(Perceptron *p, float *i, int is, float *o, int os) {
-//
-//     if (is != p->l[0].l) return false;
-//     if (os != p->l[p->ws].l) return false;
-//
-//     Vector buffer;
-//
-//     for (int i = 0; i < p->ls; i++) {
-//         vector_set_values(&p->l[i], 0);
-//     }
-//     if (!vector_copy_array_values(i, is, &p->l[0])) return false;
-//
-//     for (int i = 0; i < p->ws; i++) {
-//
-//         if (!matrix_vector_multiply(&p->w[i], &p->l[i], &buffer)) return false;
-//         if (!vector_copy_vector_values(&buffer, &p->l[i + 1])) return false;
-//
-//         vector_clear(&buffer);
-//
-//         if (!vector_add(&p->l[i + 1], &p->b[i], &buffer)) return false;
-//         if (!vector_copy_vector_values(&buffer, &p->l[i + 1])) return false;
-//
-//         vector_clear(&buffer);
-//
-//         if (!vector_map(&p->l[i + 1], &perceptron_sigmoid, &buffer)) return false;
-//         if (!vector_copy_vector_values(&buffer, &p->l[i + 1])) return false;
-//
-//         vector_clear(&buffer);
-//     }
-//
-//     if (!vector_to_array(&p->l[p->ws], o, os)) return false;
-//
-//     return true;
-// }
-//
-// void perceptron_randomize(Perceptron *p, float min, float max) {
-//
-//     for (int i = 0; i < p->ws; i++) {
-//         for (int j = 0; j < p->w[i].r * p->w[i].c; j++) {
-//
-//             p->w[i].m[j] = ((float) rand() / (float) RAND_MAX) * (max - min) + min;
-//
-//         }
-//         for (int j = 0; j < p->b[i].l; j++) {
-//             p->b[i].v[j] = ((float) rand() / (float) RAND_MAX) * (max - min) + min;
-//         }
-//     }
-// }
-//
-// float perceptron_sigmoid(float x) {
-//     return 1 / (1 + exp(-x));
-// }
-//
-// float perceptron_sigmoid_derivative(float x) {
-// //    return perceptron_sigmoid(x) * (1 - perceptron_sigmoid(x));
-//     return x * (1 - x);
-// }
-//
+int perceptron_feedforward(Perceptron *p, const float *i, int is, float *o, int os) {
+
+    if (is != p->l[0]->r) return 0;
+    if (os != p->l[p->ws]->r) return 0;
+
+    Matrix *buffer;
+
+    memcpy(p->l[0]->d, i, is * sizeof(float));
+
+    for (int i = 0; i < p->ws; i++) {
+
+        buffer = matrix_multiply(p->w[i], p->l[i]);
+        if (buffer == NULL) return 0;
+        if (matrix_copy_values(buffer, p->l[i + 1]) == 0) return 0;
+
+        matrix_destroy(buffer);
+
+        buffer = matrix_add(p->l[i + 1], p->b[i]);
+        if (buffer == NULL) return 0;
+        if (matrix_copy_values(buffer, p->l[i + 1]) == 0) return 0;
+
+        matrix_destroy(buffer);
+
+        buffer = matrix_map(p->l[i + 1], &perceptron_sigmoid);
+        if (buffer == NULL) return 0;
+        if (matrix_copy_values(buffer, p->l[i + 1]) == 0) return 0;
+
+        matrix_destroy(buffer);
+    }
+
+    memcpy(o, p->l[p->ws]->d, os * sizeof(float));
+
+    return 1;
+}
+
+void perceptron_randomize(Perceptron *p, float min, float max) {
+
+    for (int i = 0; i < p->ws; i++) {
+        for (int j = 0; j < p->w[i]->r * p->w[i]->c; j++) {
+            p->w[i]->d[j] = ((float) rand() / (float) RAND_MAX) * (max - min) + min;
+        }
+        for (int j = 0; j < p->b[i]->r * p->b[i]->c; j++) {
+            p->b[i]->d[j] = ((float) rand() / (float) RAND_MAX) * (max - min) + min;
+        }
+    }
+}
+
+
+float perceptron_sigmoid(float x) {
+    return 1 / (1 + exp(-x));
+}
+
+float perceptron_sigmoid_d(float x) {
+    // return perceptron_sigmoid(x) * (1 - perceptron_sigmoid(x));
+    return x * (1 - x);
+}
+
 // bool perceptron_train(Perceptron *p, float *i, int is, float *t, int ts) {
 //
 //     float out[ts];

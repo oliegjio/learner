@@ -3,14 +3,15 @@
 
 typedef struct Perceptron {
 
-    Vector *l;
+    Matrix **l;
     size_t ls;
 
-    Vector *b;
+    Matrix **b;
     size_t bs;
 
-    Matrix *w;
+    Matrix **w;
     size_t ws;
+    
 } Perceptron;
 
 #endif // PERCEPTRON_INTERNAL_H_
