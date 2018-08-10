@@ -10,7 +10,7 @@ void perceptron_destroy(Perceptron *p);
 
 void perceptron_randomize(Perceptron *p, float from, float to);
 int perceptron_feedforward(Perceptron *p, const float *i, int is, float *o, int os);
-int perceptron_train(Perceptron *p, float *i, int is, float *t, int ts);
+int perceptron_train(Perceptron *p, const float *i, int is, float *o, int os);
 
 void perceptron_print(const Perceptron *p);
 

@@ -213,46 +213,79 @@ float perceptron_sigmoid_d(float x) {
     return x * (1 - x);
 }
 
-// bool perceptron_train(Perceptron *p, float *i, int is, float *t, int ts) {
-//
-//     float out[ts];
-//     if (!perceptron_feedforward(p, i, is, out, ts)) return false;
-//
-//     Vector output_errors;
-//     Vector targets;
-//     Vector d_outputs;
-//     Matrix m_outputs;
-//     Matrix ml_outputs;
-//     Matrix hidden_t;
-//     Matrix ho_deltas;
-//     Vector f_deltas;
-//     Matrix f_weights;
-//
-//     const float learning_rate = 0.1f;
-//
-//     if (!vector_from_array(&targets, t, ts)) return false;
-//
-//
-//     if (!vector_subtract(&targets, &p->l[p->ws], &output_errors)) printf("1! \n");
-//     if (!vector_map(&p->l[p->ws], *perceptron_sigmoid_derivative, &d_outputs)) printf("2! \n");
-//     if (!vector_vector_multiply(&d_outputs, &output_errors, &m_outputs)) printf("3! \n");
-//     if (!matrix_scalar_multiply(&m_outputs, learning_rate, &ml_outputs)) printf("4! \n");
-//
-//     if (!matrix_vector_multiply(&ml_outputs, &p->l[p->ws], &f_deltas)) printf("5! \n");
-//
-//     if (!matrix_add(&p->w[p->ws - 1], &f_deltas, &f_weights)) printf("6! \n");
-//     if (!matrix_copy_values(&f_weights, &p->w[p->ws - 1])) printf("7! \n");
-//
-//
-//     for (int i = p->ws; i > 0; i--) {
-//
-//
-//
-//     }
-//
-//     vector_clear(&targets);
-//
-//     printf("DONE! \n");
-//
-//     return true;
-// }
+int perceptron_train(Perceptron *p, const float *i, int is, float *t, int ts) {
+
+    float o[ts];
+    if (perceptron_feedforward(p, i, is, o, ts) == 0) return 0;
+
+    Matrix *output = matrix_from_array(o, ts, 1);
+    if (output == NULL) return 0;
+
+    Matrix *target = matrix_from_array(t, ts, 1);
+    if (target == NULL) return 0;
+
+    float lr = 0.5;
+    Matrix *delta, *gradient, *error, *old_error, *transposed;
+
+    // printf("BEFORE: \n");
+    // matrix_print(p->w[p->ws - 2]);
+    // printf("\n");
+
+    /* === FIRST === */
+
+    // ERROR
+    if ((error = matrix_subtract(target, output)) == NULL) return 0;
+
+    // GRADIENT
+    if ((gradient = matrix_map(output, &perceptron_sigmoid_d)) == NULL) return 0;
+    if (matrix_hadamard_product_i(gradient, error) == 0) return 0;
+    matrix_scalar_multiply_i(gradient, lr);
+
+    // DELTA
+    if ((transposed = matrix_transpose(p->l[p->ls - 2])) == NULL) return 0;
+    if ((delta = matrix_multiply(gradient, transposed)) == NULL) return 0;
+
+    // ADJUST
+    if (matrix_add_i(p->w[p->ws - 1], delta) == 0) return 0;
+    if (matrix_add_i(p->b[p->bs - 1], gradient) == 0) return 0;
+
+    old_error = matrix_copy(error);
+
+    matrix_destroy(delta); matrix_destroy(gradient);
+    matrix_destroy(error); matrix_destroy(transposed);
+
+    /* === SECOND === */
+
+    // ERROR
+    if ((transposed = matrix_transpose(p->w[p->ws - 1])) == NULL) return 0;
+    if ((error = matrix_multiply(transposed, old_error)) == NULL) return 0;
+    matrix_destroy(old_error);
+    matrix_destroy(transposed);
+
+    // GRADIENT
+    if ((gradient = matrix_map(p->l[p->ls - 2], &perceptron_sigmoid_d)) == NULL) return 0;
+    if (matrix_hadamard_product_i(gradient, error) == 0) return 0;
+    matrix_scalar_multiply_i(gradient, lr);
+
+    // DELTA
+    if ((transposed = matrix_transpose(p->l[p->ls - 3])) == NULL) return 0;
+    if ((delta = matrix_multiply(gradient, transposed)) == NULL) return 0;
+
+    // ADJUST
+    if (matrix_add_i(p->w[p->ws - 2], delta) == 0) return 0;
+    if (matrix_add_i(p->b[p->bs - 2], gradient) == 0) return 0;
+
+    matrix_destroy(delta); matrix_destroy(gradient);
+    matrix_destroy(error); matrix_destroy(transposed);
+
+    /* === END === */
+
+    // printf("AFTER: \n");
+    // matrix_print(p->w[p->ws - 2]);
+    // printf("\n");
+
+    matrix_destroy(output);
+    matrix_destroy(target);
+
+    return 1;
+}
