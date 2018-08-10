@@ -224,12 +224,8 @@ int perceptron_train(Perceptron *p, const float *i, int is, float *t, int ts) {
     Matrix *target = matrix_from_array(t, ts, 1);
     if (target == NULL) return 0;
 
-    float lr = 0.5;
+    float lr = 0.1;
     Matrix *delta, *gradient, *error, *old_error, *transposed;
-
-    // printf("BEFORE: \n");
-    // matrix_print(p->w[p->ws - 2]);
-    // printf("\n");
 
     /* === FIRST === */
 
@@ -256,36 +252,39 @@ int perceptron_train(Perceptron *p, const float *i, int is, float *t, int ts) {
 
     /* === SECOND === */
 
-    // ERROR
-    if ((transposed = matrix_transpose(p->w[p->ws - 1])) == NULL) return 0;
-    if ((error = matrix_multiply(transposed, old_error)) == NULL) return 0;
-    matrix_destroy(old_error);
-    matrix_destroy(transposed);
+    for (int i = 1; i < p->ws; i++) {
 
-    // GRADIENT
-    if ((gradient = matrix_map(p->l[p->ls - 2], &perceptron_sigmoid_d)) == NULL) return 0;
-    if (matrix_hadamard_product_i(gradient, error) == 0) return 0;
-    matrix_scalar_multiply_i(gradient, lr);
+        // ERROR
+        if ((transposed = matrix_transpose(p->w[p->ws - i])) == NULL) return 0;
+        if ((error = matrix_multiply(transposed, old_error)) == NULL) return 0;
+        matrix_destroy(old_error);
+        matrix_destroy(transposed);
 
-    // DELTA
-    if ((transposed = matrix_transpose(p->l[p->ls - 3])) == NULL) return 0;
-    if ((delta = matrix_multiply(gradient, transposed)) == NULL) return 0;
+        // GRADIENT
+        if ((gradient = matrix_map(p->l[p->ls - (i + 1)], &perceptron_sigmoid_d)) == NULL) return 0;
+        if (matrix_hadamard_product_i(gradient, error) == 0) return 0;
+        matrix_scalar_multiply_i(gradient, lr);
 
-    // ADJUST
-    if (matrix_add_i(p->w[p->ws - 2], delta) == 0) return 0;
-    if (matrix_add_i(p->b[p->bs - 2], gradient) == 0) return 0;
+        // DELTA
+        if ((transposed = matrix_transpose(p->l[p->ls - (i + 2)])) == NULL) return 0;
+        if ((delta = matrix_multiply(gradient, transposed)) == NULL) return 0;
 
-    matrix_destroy(delta); matrix_destroy(gradient);
-    matrix_destroy(error); matrix_destroy(transposed);
+        // ADJUST
+        if (matrix_add_i(p->w[p->ws - (i + 1)], delta) == 0) return 0;
+        if (matrix_add_i(p->b[p->bs - (i + 1)], gradient) == 0) return 0;
+
+        old_error = matrix_copy(error);
+
+        matrix_destroy(delta); matrix_destroy(gradient);
+        matrix_destroy(error); matrix_destroy(transposed);
+
+    }
 
     /* === END === */
 
-    // printf("AFTER: \n");
-    // matrix_print(p->w[p->ws - 2]);
-    // printf("\n");
-
     matrix_destroy(output);
     matrix_destroy(target);
+    matrix_destroy(old_error);
 
     return 1;
 }

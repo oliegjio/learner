@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 
 #include <string.h>
 
@@ -13,10 +14,17 @@ int main(int argc, char *argv[]) {
 
     srand((unsigned int) time(NULL));
 
-    int cfg[] = {2, 2, 1};
+    int cfg[] = {2, 3, 1};
     Perceptron *p = perceptron_create(cfg, 3);
     perceptron_print(p);
-    perceptron_randomize(p, -0.5, 0.5);
+    perceptron_randomize(p, 1, 2);
+
+
+    // float input[] = {0, 1, 2};
+    // float target[2];
+    // if (perceptron_train(p, input, 3, target, 2) == 0) return 0;
+
+
 
     float samples[4][3];
     samples[0][0] = 1;
@@ -39,11 +47,14 @@ int main(int argc, char *argv[]) {
     float target[1];
     float output[1];
     float error[1];
+    float error_avg = 0;
     int min = 0;
     int max = 4 - 1;
     int r;
+    int train_time = 100000;
+    int train_select = 100;
 
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < train_time; i++) {
         r = rand() % (max + 1 - min) + min;
         input[0] = samples[r][0];
         input[1] = samples[r][1];
@@ -54,10 +65,14 @@ int main(int argc, char *argv[]) {
 
         error[0] = target[0] - output[0];
         if (i < 100 || i > 9900) {
-            // printf("%d : %f \n", i, error[0]);
-            printf("INPUT: [%.0f, %.0f]  |  TARGET: %.0f  |  OUTPUT: %.2f \n", input[0], input[1], target[0], output[0]);
+            printf("INPUT: [%.0f, %.0f]  |  TARGET: %.0f  |  OUTPUT: %.2f  |  ERROR: %.2f \n", input[0], input[1], target[0], output[0], error[0]);
+        }
+        if (i > train_time - train_select) {
+            error_avg += fabs(error[0]);
         }
     }
+    error_avg = error_avg / train_select;
+    printf("AVG ERROR: %f \n", error_avg);
 
     perceptron_destroy(p);
 
