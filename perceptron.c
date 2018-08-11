@@ -37,15 +37,17 @@ Perceptron *perceptron_create(const int *c, size_t cs) {
     Perceptron *p = (Perceptron*) malloc(sizeof(Perceptron));
     if (p == NULL) return NULL;
 
-    Matrix **l = perceptron_allocate_matrices(c, cs, LAYERS_MODE);
+    Matrix **l, **b, **w;
+
+    l = perceptron_allocate_matrices(c, cs, LAYERS_MODE);
     if (l == NULL) goto cleanup_from_layers;
     p->l = l;
 
-    Matrix **b = perceptron_allocate_matrices(c, cs - 1, BIASES_MODE);
+    b = perceptron_allocate_matrices(c, cs - 1, BIASES_MODE);
     if (b == NULL) goto cleanup_from_biases;
     p->b = b;
 
-    Matrix **w = perceptron_allocate_matrices(c, cs - 1, WEIGHTS_MODE);
+    w = perceptron_allocate_matrices(c, cs - 1, WEIGHTS_MODE);
     if (w == NULL) goto cleanup_from_weights;
     p->w = w;
 
@@ -71,7 +73,7 @@ Perceptron *perceptron_create(const int *c, size_t cs) {
 
 void perceptron_destroy_matrices(Matrix **ms, size_t s) {
 
-    for (int i = 0; i < s; i++) {
+    for (size_t i = 0; i < s; i++) {
         matrix_destroy(ms[i]);
     }
     free(ms);
@@ -84,7 +86,7 @@ Matrix **perceptron_allocate_matrices(const int *c, size_t cs, AllocateMode mode
 
     Matrix *l;
 
-    for (int i = 0; i < cs; i++) {
+    for (size_t i = 0; i < cs; i++) {
 
         switch (mode) {
             case LAYERS_MODE: l = matrix_create(c[i], 1); break;
@@ -94,7 +96,7 @@ Matrix **perceptron_allocate_matrices(const int *c, size_t cs, AllocateMode mode
         }
 
         if (l == NULL) {
-            for (int j = 0; j < i; j++) {
+            for (size_t j = 0; j < i; j++) {
                 matrix_destroy(r[j]);
             }
             free(r);
@@ -119,25 +121,25 @@ void perceptron_destroy(Perceptron *p) {
 
 void perceptron_print(const Perceptron *p) {
 
-    int neurons = 0;
-    int connections = 0;
-    int biases = 0;
+    size_t neurons = 0;
+    size_t connections = 0;
+    size_t biases = 0;
 
-    for (int i = 0; i < p->ls; i++) {
+    for (size_t i = 0; i < p->ls; i++) {
 
         neurons += p->l[i]->r;
 
         if (i == 0) {
 
-            printf("Layer %d (INTPUT LAYER): has %d neurons ", i + 1, p->l[i]->r);
+            printf("Layer %zu (INTPUT LAYER): has %zu neurons ", i + 1, p->l[i]->r);
 
         } else if (i < p->ls - 1) {
 
-            printf("Layer %d (HIDDEN LAYER): has %d neurons, %d biases ", i + 1, p->l[i]->r, p->b[i - 1]->r);
+            printf("Layer %zu (HIDDEN LAYER): has %zu neurons, %zu biases ", i + 1, p->l[i]->r, p->b[i - 1]->r);
 
         } else {
 
-            printf("Layer %d (OUTPUT LAYER): has %d neurons, %d biases ", i + 1, p->l[i]->r, p->b[i - 1]->r);
+            printf("Layer %zu (OUTPUT LAYER): has %zu neurons, %zu biases ", i + 1, p->l[i]->r, p->b[i - 1]->r);
         }
 
         if (i < p->ls - 1) {
@@ -145,7 +147,7 @@ void perceptron_print(const Perceptron *p) {
             connections += p->w[i]->c * p->w[i]->r;
             biases += p->b[i]->r;
 
-            printf("and %d connections to Layer %d \n", p->w[i]->r * p->w[i]->c, i + 2);
+            printf("and %zu connections to Layer %zu \n", p->w[i]->r * p->w[i]->c, i + 2);
 
         } else {
 
@@ -153,10 +155,10 @@ void perceptron_print(const Perceptron *p) {
         }
     }
 
-    printf("SUMMARY: %d neurons, %d connections, %d biases \n", neurons, connections, biases);
+    printf("SUMMARY: %zu neurons, %zu connections, %zu biases \n", neurons, connections, biases);
 }
 
-int perceptron_feedforward(Perceptron *p, const float *i, int is, float *o, int os) {
+int perceptron_feedforward(Perceptron *p, const float *i, size_t is, float *o, size_t os) {
 
     if (is != p->l[0]->r) return 0;
     if (os != p->l[p->ws]->r) return 0;
@@ -165,25 +167,15 @@ int perceptron_feedforward(Perceptron *p, const float *i, int is, float *o, int 
 
     memcpy(p->l[0]->d, i, is * sizeof(float));
 
-    for (int i = 0; i < p->ws; i++) {
+    for (size_t i = 0; i < p->ws; i++) {
 
-        buffer = matrix_multiply(p->w[i], p->l[i]);
-        if (buffer == NULL) return 0;
+        if ((buffer = matrix_multiply(p->w[i], p->l[i])) == NULL) return 0;
         if (matrix_copy_values(buffer, p->l[i + 1]) == 0) return 0;
 
         matrix_destroy(buffer);
 
-        buffer = matrix_add(p->l[i + 1], p->b[i]);
-        if (buffer == NULL) return 0;
-        if (matrix_copy_values(buffer, p->l[i + 1]) == 0) return 0;
-
-        matrix_destroy(buffer);
-
-        buffer = matrix_map(p->l[i + 1], &perceptron_sigmoid);
-        if (buffer == NULL) return 0;
-        if (matrix_copy_values(buffer, p->l[i + 1]) == 0) return 0;
-
-        matrix_destroy(buffer);
+        if (matrix_add_l(p->l[i + 1], p->b[i]) == 0) return 0;
+        matrix_map_l(p->l[i + 1], &perceptron_sigmoid);
     }
 
     memcpy(o, p->l[p->ws]->d, os * sizeof(float));
@@ -193,11 +185,11 @@ int perceptron_feedforward(Perceptron *p, const float *i, int is, float *o, int 
 
 void perceptron_randomize(Perceptron *p, float min, float max) {
 
-    for (int i = 0; i < p->ws; i++) {
-        for (int j = 0; j < p->w[i]->r * p->w[i]->c; j++) {
+    for (size_t i = 0; i < p->ws; i++) {
+        for (size_t j = 0; j < p->w[i]->r * p->w[i]->c; j++) {
             p->w[i]->d[j] = ((float) rand() / (float) RAND_MAX) * (max - min) + min;
         }
-        for (int j = 0; j < p->b[i]->r * p->b[i]->c; j++) {
+        for (size_t j = 0; j < p->b[i]->r * p->b[i]->c; j++) {
             p->b[i]->d[j] = ((float) rand() / (float) RAND_MAX) * (max - min) + min;
         }
     }
@@ -209,82 +201,46 @@ float perceptron_sigmoid(float x) {
 }
 
 float perceptron_sigmoid_d(float x) {
-    // return perceptron_sigmoid(x) * (1 - perceptron_sigmoid(x));
     return x * (1 - x);
 }
 
-int perceptron_train(Perceptron *p, const float *i, int is, float *t, int ts) {
+int perceptron_train(Perceptron *p, const float *i, size_t is, float *t, size_t ts) {
 
     float o[ts];
     if (perceptron_feedforward(p, i, is, o, ts) == 0) return 0;
 
-    Matrix *output = matrix_from_array(o, ts, 1);
-    if (output == NULL) return 0;
-
-    Matrix *target = matrix_from_array(t, ts, 1);
-    if (target == NULL) return 0;
-
     float lr = 0.1;
-    Matrix *delta, *gradient, *error, *old_error, *transposed;
+    Matrix *delta, *gradient, *error, *transposed, *target;
 
-    /* === FIRST === */
+    if ((target = matrix_from_array(t, ts, 1)) == NULL) return 0;
 
-    // ERROR
-    if ((error = matrix_subtract(target, output)) == NULL) return 0;
+    for (size_t i = 0; i < p->ws; i++) {
 
-    // GRADIENT
-    if ((gradient = matrix_map(output, &perceptron_sigmoid_d)) == NULL) return 0;
-    if (matrix_hadamard_product_i(gradient, error) == 0) return 0;
-    matrix_scalar_multiply_i(gradient, lr);
+        if (i == 0) {
+            if ((error = matrix_subtract(target, p->l[p->ls - (i + 1)])) == NULL) return 0;
+        } else {
+            if ((transposed = matrix_transpose(p->w[p->ws - i])) == NULL) return 0;
+            if (matrix_multiply_r(transposed, error) == 0) return 0;
+            matrix_destroy(transposed);
+        }
 
-    // DELTA
-    if ((transposed = matrix_transpose(p->l[p->ls - 2])) == NULL) return 0;
-    if ((delta = matrix_multiply(gradient, transposed)) == NULL) return 0;
-
-    // ADJUST
-    if (matrix_add_i(p->w[p->ws - 1], delta) == 0) return 0;
-    if (matrix_add_i(p->b[p->bs - 1], gradient) == 0) return 0;
-
-    old_error = matrix_copy(error);
-
-    matrix_destroy(delta); matrix_destroy(gradient);
-    matrix_destroy(error); matrix_destroy(transposed);
-
-    /* === SECOND === */
-
-    for (int i = 1; i < p->ws; i++) {
-
-        // ERROR
-        if ((transposed = matrix_transpose(p->w[p->ws - i])) == NULL) return 0;
-        if ((error = matrix_multiply(transposed, old_error)) == NULL) return 0;
-        matrix_destroy(old_error);
-        matrix_destroy(transposed);
-
-        // GRADIENT
         if ((gradient = matrix_map(p->l[p->ls - (i + 1)], &perceptron_sigmoid_d)) == NULL) return 0;
-        if (matrix_hadamard_product_i(gradient, error) == 0) return 0;
-        matrix_scalar_multiply_i(gradient, lr);
+        if (matrix_hadamard_product_l(gradient, error) == 0) return 0;
+        matrix_scalar_multiply_l(gradient, lr);
 
-        // DELTA
         if ((transposed = matrix_transpose(p->l[p->ls - (i + 2)])) == NULL) return 0;
         if ((delta = matrix_multiply(gradient, transposed)) == NULL) return 0;
+        matrix_destroy(transposed);
 
-        // ADJUST
-        if (matrix_add_i(p->w[p->ws - (i + 1)], delta) == 0) return 0;
-        if (matrix_add_i(p->b[p->bs - (i + 1)], gradient) == 0) return 0;
-
-        old_error = matrix_copy(error);
-
-        matrix_destroy(delta); matrix_destroy(gradient);
-        matrix_destroy(error); matrix_destroy(transposed);
+        if (matrix_add_l(p->w[p->ws - (i + 1)], delta) == 0) return 0;
+        if (matrix_add_l(p->b[p->bs - (i + 1)], gradient) == 0) return 0;
+        matrix_destroy(delta);
+        matrix_destroy(gradient);
 
     }
 
-    /* === END === */
-
-    matrix_destroy(output);
     matrix_destroy(target);
-    matrix_destroy(old_error);
+    matrix_destroy(error);
 
     return 1;
 }

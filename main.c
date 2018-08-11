@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     int cfg[] = {2, 3, 1};
     Perceptron *p = perceptron_create(cfg, 3);
     perceptron_print(p);
-    perceptron_randomize(p, 1, 2);
+    perceptron_randomize(p, 1.5, 2);
 
 
     // float input[] = {0, 1, 2};

@@ -43,7 +43,7 @@ Matrix *matrix_scalar_add(const Matrix *m, float n) {
     return r;
 }
 
-void matrix_scalar_add_i(Matrix *m, float n) {
+void matrix_scalar_add_l(Matrix *m, float n) {
 
     for (size_t i = 0; i < m->r * m->c; i++) {
         m->d[i] += n;
@@ -62,7 +62,7 @@ Matrix *matrix_scalar_subtract(const Matrix *m, float n) {
     return r;
 }
 
-void matrix_scalar_subtract_i(Matrix *m, float n) {
+void matrix_scalar_subtract_l(Matrix *m, float n) {
 
     for (size_t i = 0; i < m->r * m->c; i++) {
         m->d[i] -= n;
@@ -81,7 +81,7 @@ Matrix *matrix_scalar_multiply(const Matrix *m, float n) {
     return r;
 }
 
-void matrix_scalar_multiply_i(Matrix *m, float n) {
+void matrix_scalar_multiply_l(Matrix *m, float n) {
 
     for (size_t i = 0; i < m->r * m->c; i++) {
         m->d[i] *= n;
@@ -93,8 +93,6 @@ Matrix *matrix_copy(const Matrix *m) {
   Matrix *r = matrix_create(m->r, m->c);
   if (r == NULL) return NULL;
 
-  r->r = m->r;
-  r->c = m->c;
   memcpy(r->d, m->d, m->r * m->c * sizeof(float));
 
   return r;
@@ -139,7 +137,7 @@ Matrix *matrix_add(const Matrix *a, const Matrix *b) {
     return r;
 }
 
-int matrix_add_i(Matrix *a, const Matrix *b) {
+int matrix_add_l(Matrix *a, const Matrix *b) {
 
     if (matrix_is_dimensions_equal(a, b) == 0) return 0;
 
@@ -164,7 +162,7 @@ Matrix *matrix_subtract(const Matrix *a, const Matrix *b) {
     return r;
 }
 
-int matrix_subtract_i(Matrix *a, const Matrix *b) {
+int matrix_subtract_l(Matrix *a, const Matrix *b) {
 
     if (matrix_is_dimensions_equal(a, b) == 0) return 0;
 
@@ -189,7 +187,7 @@ Matrix *matrix_transpose(const Matrix *m) {
     return r;
 }
 
-int matrix_transpose_i(Matrix *m) {
+int matrix_transpose_l(Matrix *m) {
 
     float *d = (float*) calloc(m->c * m->r, sizeof(float));
     if (d == NULL) return 0;
@@ -261,32 +259,7 @@ Matrix *matrix_multiply(const Matrix *a, const Matrix *b) {
     return r;
 }
 
-Matrix *matrix_hadamard_product(const Matrix *a, const Matrix *b) {
-
-    if (matrix_is_dimensions_equal(a, b) == 0) return NULL;
-
-    Matrix *r = matrix_create(a->r, a->c);
-    if (r == NULL) return NULL;
-
-    for (int i = 0; i < a->r * a->c; i++) {
-        r->d[i] = a->d[i] * b->d[i];
-    }
-
-    return r;
-}
-
-int matrix_hadamard_product_i(Matrix *a, const Matrix *b) {
-
-    if (matrix_is_dimensions_equal(a, b) == 0) return 0;
-
-    for (int i = 0; i < a->r * a->c; i++) {
-        a->d[i] *= b->d[i];
-    }
-
-    return 1;
-}
-
-int matrix_multiply_i(Matrix *a, const Matrix *b) {
+int matrix_multiply_l(Matrix *a, const Matrix *b) {
 
     if (matrix_can_multiply(a, b) == 0) return 0;
 
@@ -305,6 +278,54 @@ int matrix_multiply_i(Matrix *a, const Matrix *b) {
     a->d = d;
 
     a->c = b->c;
+
+    return 1;
+}
+
+int matrix_multiply_r(const Matrix *a, Matrix *b) {
+
+    if (matrix_can_multiply(a, b) == 0) return 0;
+
+    float *d = (float*) calloc(a->r * b->c, sizeof(float));
+    if (d == NULL) return 0;
+
+    for (size_t i = 0; i < a->r; i++) {
+        for (size_t j = 0; j < b->c; j++) {
+            for (size_t k = 0; k < a->c; k++) {
+                d[j + i * b->c] += a->d[k + i * a->c] * b->d[j + k * b->c];
+            }
+        }
+    }
+
+    free(b->d);
+    b->d = d;
+
+    b->r = a->r;
+
+    return 1;
+}
+
+Matrix *matrix_hadamard_product(const Matrix *a, const Matrix *b) {
+
+    if (matrix_is_dimensions_equal(a, b) == 0) return NULL;
+
+    Matrix *r = matrix_create(a->r, a->c);
+    if (r == NULL) return NULL;
+
+    for (size_t i = 0; i < a->r * a->c; i++) {
+        r->d[i] = a->d[i] * b->d[i];
+    }
+
+    return r;
+}
+
+int matrix_hadamard_product_l(Matrix *a, const Matrix *b) {
+
+    if (matrix_is_dimensions_equal(a, b) == 0) return 0;
+
+    for (size_t i = 0; i < a->r * a->c; i++) {
+        a->d[i] *= b->d[i];
+    }
 
     return 1;
 }
@@ -348,23 +369,26 @@ Matrix *matrix_map(const Matrix *m, float (*f)(float)) {
     Matrix *r = matrix_create(m->r, m->c);
     if (r == NULL) return NULL;
 
-    for (size_t i = 0; i < m->r; i++) {
-        for (size_t j = 0; j < m->c; j++) {
-            r->d[j + i * r->c] = (*f)(m->d[j + i * m->c]);
-        }
+    for (size_t i = 0; i < m->r * m->c; i++) {
+        r->d[i] = (*f)(m->d[i]);
     }
 
     return r;
+}
+
+void matrix_map_l(Matrix *m, float (*f)(float)) {
+
+    for (size_t i = 0; i < m->r * m->c; i++) {
+        m->d[i] = (*f)(m->d[i]);
+    }
 }
 
 int matrix_equal(const Matrix *a, const Matrix *b) {
 
     if (matrix_is_dimensions_equal(a, b) == 0) return 0;
 
-    for (size_t i = 0; i < a->r; i++) {
-        for (size_t j = 0; j < a->c; j++) {
-            if (a->d[j + i * a->c] != b->d[j + i * b->c]) return 0;
-        }
+    for (size_t i = 0; i < a->r * a->c; i++) {
+        if (a->d[i] != b->d[i]) return 0;
     }
 
     return 1;
