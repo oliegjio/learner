@@ -26,8 +26,9 @@ Vector *vector_normalize(const Vector *v);
 int vector_angle_rad(const Vector *a, const Vector *b, float *r);
 int vector_angle_deg(const Vector *a, const Vector *b, float *r);
 float vector_modulus(const Vector *v);
-int vector_equal(const Vector *a, const Vector *b);
 Vector *vector_map(const Vector *v, float (*f)(float));
+
+int vector_equal(const Vector *a, const Vector *b);
 
 int vector_push_back(Vector *v, float n);
 int vector_pop_back(Vector *v);

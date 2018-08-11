@@ -1,4 +1,6 @@
-./machine-learning
+machine-learning
 *.o
 build
 *.gch
+cmake-build-debug
+.idea

@@ -5,5 +5,6 @@
 #include "vector.h"
 #include "linear_algebra.h"
 #include "perceptron.h"
+#include "dataset.h"
 
 #endif // MACHINE_LEARNING_H_
