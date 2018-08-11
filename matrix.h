@@ -24,13 +24,14 @@ float *matrix_row_to_array(const Matrix *m, size_t n);
 int matrix_add_l(Matrix *a, const Matrix *b);
 int matrix_subtract_l(Matrix *a, const Matrix *b);
 int matrix_multiply_l(Matrix *a, const Matrix *b);
-int matrix_multiply_r(const Matrix *a, Matrix *b);
 void matrix_scalar_add_l(Matrix *m, float n);
 void matrix_scalar_subtract_l(Matrix *m, float n);
 void matrix_scalar_multiply_l(Matrix *m, float n);
 int matrix_transpose_l(Matrix *m);
 int matrix_hadamard_product_l(Matrix *a, const Matrix *b);
 void matrix_map_l(Matrix *m, float (*f)(float));
+
+int matrix_multiply_r(const Matrix *a, Matrix *b);
 
 Matrix *matrix_add(const Matrix *a, const Matrix *b);
 Matrix *matrix_subtract(const Matrix *a, const Matrix *b);

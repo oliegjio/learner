@@ -19,13 +19,6 @@ int main(int argc, char *argv[]) {
     perceptron_print(p);
     perceptron_randomize(p, 1.5, 2);
 
-
-    // float input[] = {0, 1, 2};
-    // float target[2];
-    // if (perceptron_train(p, input, 3, target, 2) == 0) return 0;
-
-
-
     float samples[4][3];
     samples[0][0] = 1;
     samples[0][1] = 0;
@@ -48,6 +41,7 @@ int main(int argc, char *argv[]) {
     float output[1];
     float error[1];
     float error_avg = 0;
+    float error_avg_before = 0;
     int min = 0;
     int max = 4 - 1;
     int r;
@@ -64,15 +58,21 @@ int main(int argc, char *argv[]) {
         if (perceptron_feedforward(p, input, 2, output, 1) == 0) return 0;
 
         error[0] = target[0] - output[0];
-        if (i < 100 || i > 9900) {
+        if (i < train_time || i > train_time - train_select) {
             printf("INPUT: [%.0f, %.0f]  |  TARGET: %.0f  |  OUTPUT: %.2f  |  ERROR: %.2f \n", input[0], input[1], target[0], output[0], error[0]);
         }
         if (i > train_time - train_select) {
             error_avg += fabs(error[0]);
         }
+        if (i < train_select) {
+            error_avg_before += fabs(error[0]);
+        }
     }
-    error_avg = error_avg / train_select;
-    printf("AVG ERROR: %f \n", error_avg);
+    error_avg /=  train_select;
+    printf("AFTER AVG ERROR: %f \n", error_avg);
+
+    error_avg_before /= train_select;
+    printf("BEFORE AVG ERROR: %f \n", error_avg_before);
 
     perceptron_destroy(p);
 

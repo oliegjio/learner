@@ -1,3 +1,4 @@
 ./machine-learning
 *.o
 build
+*.gch
