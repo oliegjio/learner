@@ -2,11 +2,29 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
+
+/* #define MATRIX_MULTITHREAD */
+
+#ifdef MATRIX_MULTITHREAD
+#include  <pthread.h>
+#define MATRIX_MAX_THREADS 4
+#define MATRIX_THREAD_PART 4
+#endif
 
 typedef struct Matrix {
     size_t r, c;
     float *d;
 } Matrix;
+
+typedef struct WorkerData {
+    Matrix *a;
+    Matrix *b;
+    Matrix *r;
+    size_t threads;
+} WorkerData;
+
+void *matrix_multiplication_worker(void *data);
 
 Matrix *matrix_create(size_t r, size_t c) {
 
@@ -241,12 +259,58 @@ float *matrix_row_to_array(const Matrix *m, size_t n) {
     return arr;
 }
 
+#ifdef MATRIX_MULTITHREAD
+void *matrix_multiplication_worker(void *data) {
+
+    Matrix *a = ((WorkerData*) data)->a;
+    Matrix *b = ((WorkerData*) data)->b;
+    Matrix *r = ((WorkerData*) data)->r;
+    size_t threads = ((WorkerData*) data)->threads;
+
+    if (r->r < threads) pthread_exit(0);
+
+    size_t from = threads * (size_t) ceilf(r->r / MATRIX_MAX_THREADS);
+    size_t to = (threads + 1) * (size_t) ceilf(r->r / MATRIX_MAX_THREADS);
+
+    for (size_t i = from; i < to; i++) {
+        for (size_t j = 0; j < r->c; j++) {
+            for (size_t k = 0; k < a->c; k++) {
+                r->d[j + i * r->c] += a->d[k + i * a->c] * b->d[j + k * b->c];
+            }
+        }
+    }
+
+    pthread_exit(0);
+}
+#endif
+
 Matrix *matrix_multiply(const Matrix *a, const Matrix *b) {
 
     if (matrix_can_multiply(a, b) == 0) return NULL;
 
     Matrix *r = matrix_create(a->r, b->c);
     if (r == NULL) return NULL;
+
+#ifdef MATRIX_MULTITHREAD
+
+    pthread_t threads[MATRIX_MAX_THREADS];
+    WorkerData data[MATRIX_MAX_THREADS];
+
+    for (size_t i = 0; i < MATRIX_MAX_THREADS; i++) {
+
+        data[i].a = a;
+        data[i].b = b;
+        data[i].r = r;
+        data[i].threads = i + 1;
+
+        pthread_create(&threads[i], NULL, matrix_multiplication_worker, (void*) &data);
+    }
+
+    for (size_t i = 0; i < MATRIX_MAX_THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+#else
 
     for (size_t i = 0; i < r->r; i++) {
         for (size_t j = 0; j < r->c; j++) {
@@ -255,6 +319,8 @@ Matrix *matrix_multiply(const Matrix *a, const Matrix *b) {
             }
         }
     }
+
+#endif
 
     return r;
 }

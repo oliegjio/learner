@@ -18,13 +18,13 @@ typedef struct Perceptron {
 
 } Perceptron;
 
-typedef enum AllocateMode {
+typedef enum AllocationMode {
     LAYERS_MODE = 0,
     BIASES_MODE,
     WEIGHTS_MODE
-} AllocateMode;
+} AllocationMode;
 
-Matrix **perceptron_allocate_matrices(const int *c, size_t cs, AllocateMode mode);
+struct Matrix **perceptron_allocate_matrices(const int *c, size_t cs, AllocationMode mode);
 void perceptron_destroy_matrices(Matrix **ms, size_t s);
 
 float perceptron_sigmoid(float x);
@@ -79,7 +79,7 @@ void perceptron_destroy_matrices(Matrix **ms, size_t s) {
     free(ms);
 }
 
-Matrix **perceptron_allocate_matrices(const int *c, size_t cs, AllocateMode mode) {
+Matrix **perceptron_allocate_matrices(const int *c, size_t cs, AllocationMode mode) {
 
     Matrix **r = (Matrix**) malloc(cs * sizeof(Matrix*));
     if (r == NULL) return NULL;
