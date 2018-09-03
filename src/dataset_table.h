@@ -14,9 +14,11 @@ typedef enum ColumnType {
 } ColumnType;
 
 typedef struct DatasetTable DatasetTable;
+typedef struct TableColumn TableColumn;
 typedef union TableCell TableCell;
 
 DatasetTable *dataset_load_csv(const char *p, LabelsFlag lf);
 
 void dataset_print_table(const DatasetTable *t);
+
 #endif // DATASET_H_
